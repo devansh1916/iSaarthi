@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #213547;
+  background-color: #ffffff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light green theme variables */
+:root {
+  --light-green-50: #f0fdf4;
+  --light-green-100: #dcfce7;
+  --light-green-200: #bbf7d0;
+  --light-green-300: #86efac;
+  --light-green-400: #4ade80;
+  --light-green-500: #22c55e;
+  --light-green-600: #16a34a;
+  --light-green-700: #15803d;
+  --light-green-800: #166534;
+  --light-green-900: #14532d;
+}
+
+/* Custom green color #55AD9B */
+:root {
+  --custom-green: #55AD9B;
+  --custom-green-light: #6bb8a9;
+  --custom-green-dark: #4a9a8a;
+  --custom-green-lighter: #7cc4b7;
+  --custom-green-darker: #3f8a7b;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
