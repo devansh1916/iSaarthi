@@ -11,29 +11,8 @@ import 'dart:ui' as ui; // Import with an alias to resolve the conflict
 import 'views/home_view.dart'; 
 import 'package:intl/intl.dart'; 
 
-<<<<<<< Updated upstream:flutter_map_app/lib/main.dart
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(
-    MaterialApp(
-      title: "Map app",
-      theme: ThemeData(primaryColor: Colors.cyanAccent),
-      home: const RegisterView(),
-    ),
-  );
-}
-
-class MapView extends StatelessWidget {
-  const MapView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: FullscreenWebView());
-  }
-=======
 // --- IMPORTANT: PASTE YOUR MAPTILER API KEY HERE ---
-const String yourMapTilerApiKey = 'WCthTmHiFHsTzAuLYrKr#-0.0/7.34655/-32.36416';
+const String yourMapTilerApiKey = 'WCthTmHiFHsTzAuLYrKr';
 // ----------------------------------------------------
 
 void main() async {
@@ -56,7 +35,6 @@ class MapView extends StatefulWidget {
 
   @override
   State<MapView> createState() => _MapViewState();
->>>>>>> Stashed changes:lib/main.dart
 }
 
 class _MapViewState extends State<MapView> {
@@ -67,18 +45,6 @@ class _MapViewState extends State<MapView> {
   int _currentIndex = 2; // Set initial index to Map
 
   @override
-<<<<<<< Updated upstream:flutter_map_app/lib/main.dart
-  State<FullscreenWebView> createState() => _FullscreenWebViewState();
-}
-
-class _FullscreenWebViewState extends State<FullscreenWebView> {
-  late final WebViewController _controller;
-  final String url =
-      "https://api.maptiler.com/maps/0197cb4e-5175-7b8e-a05b-7119c556c260/?key=WCthTmHiFHsTzAuLYrKr#1.0/0.00000/0.00000";
-
-  @override
-=======
->>>>>>> Stashed changes:lib/main.dart
   void initState() {
     super.initState();
     _getCurrentLocation();
@@ -163,9 +129,6 @@ class _FullscreenWebViewState extends State<FullscreenWebView> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< Updated upstream:flutter_map_app/lib/main.dart
-    return Scaffold(body: WebViewWidget(controller: _controller));
-=======
     if (yourMapTilerApiKey == 'YOUR_MAPTILER_API_KEY') {
       return Scaffold(
         appBar: AppBar(title: const Text('Configuration Error')),
@@ -619,6 +582,5 @@ class DescriptionWidget extends StatelessWidget {
         ],
       ),
     );
->>>>>>> Stashed changes:lib/main.dart
   }
 }
