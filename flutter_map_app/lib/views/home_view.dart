@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../main.dart';
+import 'report_issue_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -22,9 +23,7 @@ class _HomeViewState extends State<HomeView> {
   void _onItemTapped(int index) {
     if (index == 1) {
       // If the map icon is tapped, navigate to the full MapView
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (context) => const MapView()));
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MapView()));
     } else {
       setState(() {
         _selectedIndex = index;
@@ -35,11 +34,20 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _widgetOptions),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _widgetOptions,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Map',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color(0xFF55AD9B),
@@ -79,7 +87,10 @@ class HomePageContent extends StatelessWidget {
                     ),
                     const Text(
                       'Let\'s make our city better.',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -98,10 +109,13 @@ class HomePageContent extends StatelessWidget {
             // Recent Issues Section
             const Text(
               'Your Recent Issues',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
-
+            
             // Placeholder for recent issues list
             RecentIssueCard(
               icon: Icons.warning,
@@ -115,7 +129,7 @@ class HomePageContent extends StatelessWidget {
               title: 'Garbage Collection Missed',
               status: 'Resolved',
             ),
-            RecentIssueCard(
+             RecentIssueCard(
               icon: Icons.traffic,
               color: Colors.red,
               title: 'Pothole on Main Street',
@@ -129,8 +143,6 @@ class HomePageContent extends StatelessWidget {
 }
 
 class ActionCard extends StatelessWidget {
-  const ActionCard({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -156,9 +168,22 @@ class ActionCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 const Text(
                   'Help your community by reporting it now.',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                     Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ReportIssueView()));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF55AD9B),
+                  ),
+                  child: const Text('Report a New Issue'),
+                ),
               ],
             ),
           ),
@@ -176,7 +201,6 @@ class RecentIssueCard extends StatelessWidget {
   final String status;
 
   const RecentIssueCard({
-    super.key,
     required this.icon,
     required this.color,
     required this.title,
@@ -213,9 +237,16 @@ class RecentIssueCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Text(status, style: TextStyle(color: Colors.grey[600])),
+                Text(
+                  status,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                  ),
+                ),
               ],
             ),
           ),
