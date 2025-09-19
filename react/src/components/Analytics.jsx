@@ -31,7 +31,6 @@ const Analytics = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Mock data serves as a fallback
   const mockIssues = [
       {
         id: "mock-1",
@@ -69,7 +68,6 @@ const Analytics = () => {
     fetchIssues();
   }, []);
 
-  // Calculate analytics whenever the issues list changes
   useEffect(() => {
     if (issues.length > 0) {
       setLoading(true);
@@ -131,7 +129,6 @@ const Analytics = () => {
   }, [issues]);
 
   const handleRefresh = () => {
-    // This would re-trigger the fetch, but for now it just shows loading
     setLoading(true);
     setTimeout(() => setLoading(false), 500);
   };
@@ -208,14 +205,12 @@ const Analytics = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Department Performance Chart */}
         <div className="lg:col-span-3 bg-white rounded-lg shadow-md border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Department Performance</h2>
             <div className="h-80">
                 <Bar data={barChartData} options={{ maintainAspectRatio: false }} />
             </div>
         </div>
-        {/* Priority Distribution Chart */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow-md border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Priority Distribution</h2>
             <div className="h-80">

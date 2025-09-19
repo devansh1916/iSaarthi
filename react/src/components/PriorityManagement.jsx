@@ -28,7 +28,7 @@ const PriorityManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState('all');
 
-  // Mock data - replace with actual API calls
+
   useEffect(() => {
     const mockIssues = [
       {
@@ -223,13 +223,12 @@ const PriorityManagement = () => {
   };
 
   const handleBulkPriorityUpdate = (newPriority) => {
-    // Implement bulk priority update
     console.log(`Updating priority to ${newPriority} for issues:`, selectedIssues);
     setSelectedIssues([]);
   };
 
   const handleApplySmartPriorities = () => {
-    // Implement smart priority application
+  
     console.log('Applying smart priorities to all issues');
   };
 
@@ -242,7 +241,6 @@ const PriorityManagement = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Smart Priority Management</h1>
         <div className="flex space-x-4">
@@ -262,7 +260,6 @@ const PriorityManagement = () => {
         </div>
       </div>
 
-      {/* Priority Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
           <div className="flex items-center justify-between">
@@ -303,7 +300,6 @@ const PriorityManagement = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Issues List */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-md border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -364,7 +360,6 @@ const PriorityManagement = () => {
                       </div>
                       <p className="text-sm text-gray-600 mb-3">{issue.description}</p>
                       
-                      {/* Priority Factors */}
                       <div className="mb-3">
                         <p className="text-xs font-medium text-gray-700 mb-1">Priority Factors:</p>
                         <div className="flex flex-wrap gap-1">
@@ -379,7 +374,7 @@ const PriorityManagement = () => {
                         </div>
                       </div>
 
-                      {/* Scores */}
+
                       <div className="grid grid-cols-3 gap-4 text-xs">
                         <div>
                           <span className="text-gray-500">Impact: </span>
@@ -422,7 +417,7 @@ const PriorityManagement = () => {
             </div>
           </div>
 
-          {/* Bulk Actions */}
+
           {selectedIssues.length > 0 && (
             <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
@@ -460,7 +455,7 @@ const PriorityManagement = () => {
           )}
         </div>
 
-        {/* Priority Rules */}
+
         <div className="space-y-6">
           {showRules && (
             <div className="bg-white rounded-lg shadow-md border border-gray-200">
@@ -510,7 +505,7 @@ const PriorityManagement = () => {
             </div>
           )}
 
-          {/* Smart Priority Insights */}
+
           <div className="bg-white rounded-lg shadow-md border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Smart Priority Insights</h2>

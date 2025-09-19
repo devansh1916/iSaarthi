@@ -3,7 +3,6 @@ import {
   Home, 
   Filter, 
   Building, 
-  Target, 
   BarChart3, 
   Settings, 
   Menu, 
@@ -11,7 +10,8 @@ import {
   Bell,
   User,
   Search,
-  LogOut
+  LogOut,
+  ShieldQuestion 
 } from 'lucide-react';
 
 const Navigation = ({ currentPage, onPageChange }) => {
@@ -19,6 +19,7 @@ const Navigation = ({ currentPage, onPageChange }) => {
   const [notifications, setNotifications] = useState(5);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
 
   const navigationItems = [
     {
@@ -28,23 +29,18 @@ const Navigation = ({ currentPage, onPageChange }) => {
       description: 'Overview of all issues'
     },
     {
+      id: 'flagged', 
+      name: 'Flagged for Review',
+      icon: ShieldQuestion,
+      description: 'Issues needing manual review'
+    },
+    {
       id: 'issues',
       name: 'Issue Management',
       icon: Filter,
-      description: 'Filter and sort issues'
+      description: 'Filter and sort all issues'
     },
-    {
-      id: 'assignment',
-      name: 'Department Assignment',
-      icon: Building,
-      description: 'Route issues to departments'
-    },
-    {
-      id: 'priority',
-      name: 'Priority Management',
-      icon: Target,
-      description: 'Smart prioritization'
-    },
+
     {
       id: 'analytics',
       name: 'Analytics',
@@ -70,17 +66,15 @@ const Navigation = ({ currentPage, onPageChange }) => {
 
   const handleNotificationAction = (action) => {
     console.log(`Notification action: ${action}`);
-    // Implement notification actions here
+
   };
 
   const handleSettingsAction = (action) => {
     console.log(`Settings action: ${action}`);
-    // Implement settings actions here
   };
 
   return (
     <>
-      {/* Mobile menu button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -90,7 +84,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
         </button>
       </div>
 
-      {/* Mobile overlay */}
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -98,7 +91,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
         />
       )}
 
-      {/* Sidebar */}
       <div 
         className={`
           fixed top-0 left-0 h-full w-64 shadow-lg z-30 transform transition-transform duration-300 ease-in-out
@@ -110,7 +102,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
           borderRight: '1px solid #4a9a8a'
         }}
       >
-        {/* Header */}
         <div 
           className="p-6 border-b"
           style={{ borderBottomColor: '#6bb8a9' }}
@@ -126,7 +117,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
@@ -181,7 +171,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
           })}
         </nav>
 
-        {/* User section */}
         <div 
           className="p-4 border-t"
           style={{ borderTopColor: '#6bb8a9' }}
@@ -218,8 +207,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
           </div>
         </div>
       </div>
-
-      {/* Top bar */}
       <div className="lg:ml-64 bg-gradient-to-r from-white to-green-50 border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -232,7 +219,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* Search */}
             <div className="hidden md:block relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -242,7 +228,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
               />
             </div>
 
-            {/* Notifications */}
             <div className="relative">
               <button 
                 onClick={handleNotificationClick}
@@ -256,7 +241,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
                 )}
               </button>
               
-              {/* Notifications Dropdown */}
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="p-4 border-b border-gray-200">
@@ -306,7 +290,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
               )}
             </div>
 
-            {/* Settings Dropdown */}
             {showSettings && (
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div className="p-4 border-b border-gray-200">
@@ -354,7 +337,6 @@ const Navigation = ({ currentPage, onPageChange }) => {
               </div>
             )}
 
-            {/* User menu */}
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />

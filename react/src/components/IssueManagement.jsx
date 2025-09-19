@@ -94,11 +94,9 @@ const IssueManagement = () => {
   }, []);
 
 
-  // Apply filters and sorting
   useEffect(() => {
     let filtered = [...issues];
 
-    // Apply search filter
     if (filters.search) {
       filtered = filtered.filter(issue =>
         (issue.issue || issue.title || '').toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -108,22 +106,18 @@ const IssueManagement = () => {
       );
     }
 
-    // Apply status filter
     if (filters.status !== 'all') {
       filtered = filtered.filter(issue => issue.status.toLowerCase().replace(' ', '-') === filters.status);
     }
 
-    // Apply priority filter
     if (filters.priority !== 'all') {
       filtered = filtered.filter(issue => issue.priority.toLowerCase() === filters.priority);
     }
 
-    // Apply department filter
     if (filters.department !== 'all') {
       filtered = filtered.filter(issue => issue.department === filters.department);
     }
 
-    // Apply date range filter
     if (filters.dateRange !== 'all') {
       const now = new Date();
       const daysAgo = parseInt(filters.dateRange);
@@ -131,12 +125,10 @@ const IssueManagement = () => {
       filtered = filtered.filter(issue => new Date(issue.date || issue.reportedAt) >= cutoffDate);
     }
 
-    // Apply assigned to filter
     if (filters.assignedTo !== 'all') {
       filtered = filtered.filter(issue => issue.assignedTo === filters.assignedTo);
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       let aValue = a[sortBy];
       let bValue = b[sortBy];
@@ -186,7 +178,6 @@ const IssueManagement = () => {
   };
 
   const getIssueRowBackgroundColor = (priority) => {
-    // Priority takes precedence for background color
     switch (priority) {
       case 'High': return 'bg-red-50 border-l-4 border-red-500';
       case 'Medium': return 'bg-yellow-50 border-l-4 border-yellow-500';
@@ -212,7 +203,6 @@ const IssueManagement = () => {
   };
 
   const handleBulkAction = (action) => {
-    // Implement bulk actions
     console.log(`Bulk action: ${action} on issues:`, selectedIssues);
     setSelectedIssues([]);
   };
@@ -222,7 +212,6 @@ const IssueManagement = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Issue Management</h1>
         <div className="flex items-center space-x-4">
@@ -236,7 +225,6 @@ const IssueManagement = () => {
         </div>
       </div>
 
-      {/* Search and Quick Filters */}
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
@@ -276,7 +264,6 @@ const IssueManagement = () => {
           </div>
         </div>
 
-        {/* Advanced Filters */}
         {showFilters && (
           <div className="mt-6 pt-6 border-t border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -346,8 +333,6 @@ const IssueManagement = () => {
           </div>
         )}
       </div>
-
-      {/* Bulk Actions */}
       {selectedIssues.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
@@ -378,7 +363,6 @@ const IssueManagement = () => {
         </div>
       )}
 
-      {/* Issues Table */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -493,7 +477,6 @@ const IssueManagement = () => {
         </div>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-700">
           Showing {filteredIssues.length} of {issues.length} issues

@@ -4,7 +4,18 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ReportIssueView extends StatefulWidget {
-  const ReportIssueView({super.key});
+  final String? initialTitle;
+  final String? initialDescription;
+  final String? initialLocation;
+  final String? initialDepartment;
+
+  const ReportIssueView({
+    super.key,
+    this.initialTitle,
+    this.initialDescription,
+    this.initialLocation,
+    this.initialDepartment,
+  });
 
   @override
   State<ReportIssueView> createState() => _ReportIssueViewState();
@@ -12,22 +23,29 @@ class ReportIssueView extends StatefulWidget {
 
 class _ReportIssueViewState extends State<ReportIssueView> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _locationController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _locationController;
 
   String? _selectedDepartment;
   bool _isSubmitting = false;
 
   final List<String> _departments = [
-    'Public Works',
-    'Utilities',
-    'Sanitation',
-    'Parks & Recreation',
-    'Emergency Services',
-    'Road',
-    'Water Works'
+    'Public Works', 'Utilities', 'Sanitation', 'Parks & Recreation', 
+    'Emergency Services', 'Road', 'Water Works'
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.initialTitle);
+    _descriptionController = TextEditingController(text: widget.initialDescription);
+    _locationController = TextEditingController(text: widget.initialLocation);
+
+    if (widget.initialDepartment != null && _departments.contains(widget.initialDepartment)) {
+      _selectedDepartment = widget.initialDepartment;
+    }
+  }
 
   @override
   void dispose() {
@@ -39,18 +57,14 @@ class _ReportIssueViewState extends State<ReportIssueView> {
 
   Future<void> _submitIssue() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isSubmitting = true;
-      });
+      setState(() { _isSubmitting = true; });
 
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('You must be logged in to report an issue.')),
         );
-        setState(() {
-          _isSubmitting = false;
-        });
+        setState(() { _isSubmitting = false; });
         return;
       }
 
@@ -61,10 +75,7 @@ class _ReportIssueViewState extends State<ReportIssueView> {
         "description": _descriptionController.text,
         "reportedBy": user.email ?? 'Anonymous'
       };
-
-      // IMPORTANT: Replace with your actual server IP/domain
-      // For local development with an Android emulator, use 10.0.2.2
-      // For a physical device, use your computer's local network IP.
+      
       final url = Uri.parse('http://10.0.2.2:3001/api/issues');
 
       try {
@@ -76,27 +87,18 @@ class _ReportIssueViewState extends State<ReportIssueView> {
 
         if (response.statusCode == 201) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Issue reported successfully!'),
-              backgroundColor: Colors.green,
-            ),
+            const SnackBar(content: Text('Issue reported successfully!'), backgroundColor: Colors.green),
           );
-          Navigator.of(context).pop();
+          Navigator.of(context).popUntil((route) => route.isFirst);
         } else {
           throw Exception('Failed to submit issue. Status code: ${response.statusCode}');
         }
       } catch (e) {
-        print('An error occurred: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('An error occurred: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('An error occurred: $e'), backgroundColor: Colors.red),
         );
       } finally {
-        setState(() {
-          _isSubmitting = false;
-        });
+        setState(() { _isSubmitting = false; });
       }
     }
   }
@@ -105,7 +107,7 @@ class _ReportIssueViewState extends State<ReportIssueView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Report a New Issue'),
+        title: const Text('Review & Submit Issue'),
         backgroundColor: const Color(0xFF55AD9B),
       ),
       body: SingleChildScrollView(
@@ -116,14 +118,17 @@ class _ReportIssueViewState extends State<ReportIssueView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text(
-                  'Help improve your community by reporting an issue.',
-                  style: Theme.of(context).textTheme.titleMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24.0),
-                
-                // Issue Title Field
+                if (widget.initialTitle != null)
+                   Padding(
+                     padding: const EdgeInsets.only(bottom: 24.0),
+                     child: Text(
+                       'AI has pre-filled the form. Please review and edit if necessary.',
+                       style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.green[800]),
+                       textAlign: TextAlign.center,
+                     ),
+                   ),
+
+  
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
@@ -132,16 +137,10 @@ class _ReportIssueViewState extends State<ReportIssueView> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.title),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title for the issue.';
-                    }
-                    return null;
-                  },
+                  validator: (value) => (value == null || value.isEmpty) ? 'Please enter a title.' : null,
                 ),
                 const SizedBox(height: 16.0),
 
-                // Department Dropdown
                 DropdownButtonFormField<String>(
                   value: _selectedDepartment,
                   decoration: const InputDecoration(
@@ -152,26 +151,16 @@ class _ReportIssueViewState extends State<ReportIssueView> {
                   hint: const Text('Select the relevant department'),
                   isExpanded: true,
                   items: _departments.map((String department) {
-                    return DropdownMenuItem<String>(
-                      value: department,
-                      child: Text(department),
-                    );
+                    return DropdownMenuItem<String>(value: department, child: Text(department));
                   }).toList(),
                   onChanged: (newValue) {
-                    setState(() {
-                      _selectedDepartment = newValue;
-                    });
+                    setState(() { _selectedDepartment = newValue; });
                   },
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Please select a department.';
-                    }
-                    return null;
-                  },
+                  validator: (value) => (value == null) ? 'Please select a department.' : null,
                 ),
                 const SizedBox(height: 16.0),
                 
-                // Location Field
+  
                 TextFormField(
                   controller: _locationController,
                   decoration: const InputDecoration(
@@ -180,16 +169,10 @@ class _ReportIssueViewState extends State<ReportIssueView> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.location_on),
                   ),
-                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please provide a location.';
-                    }
-                    return null;
-                  },
+                   validator: (value) => (value == null || value.isEmpty) ? 'Please provide a location.' : null,
                 ),
                 const SizedBox(height: 16.0),
 
-                // Description Field
                 TextFormField(
                   controller: _descriptionController,
                   decoration: const InputDecoration(
@@ -199,16 +182,10 @@ class _ReportIssueViewState extends State<ReportIssueView> {
                     prefixIcon: Icon(Icons.description),
                   ),
                   maxLines: 5,
-                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please describe the issue.';
-                    }
-                    return null;
-                  },
+                   validator: (value) => (value == null || value.isEmpty) ? 'Please describe the issue.' : null,
                 ),
                 const SizedBox(height: 32.0),
 
-                // Submit Button
                 ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitIssue,
                   style: ElevatedButton.styleFrom(
@@ -217,10 +194,8 @@ class _ReportIssueViewState extends State<ReportIssueView> {
                     textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   child: _isSubmitting
-                      ? const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        )
-                      : const Text('Submit Issue'),
+                      ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+                      : const Text('Confirm & Submit'),
                 ),
               ],
             ),

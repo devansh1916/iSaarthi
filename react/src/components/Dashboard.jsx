@@ -15,24 +15,20 @@ import {
 } from 'lucide-react';
 
 
-// Helper to get a consistent and valid date object or null
 const getIssueDate = (issue) => {
-  // The server now sends a standardized ISO string in the 'timestamp' field for all new issues.
   if (issue.timestamp) {
     const d = new Date(issue.timestamp);
     if (!isNaN(d.getTime())) return d;
   }
-  // Fallback for mock data
   if (issue.reportedAt) {
     const d = new Date(issue.reportedAt);
     if (!isNaN(d.getTime())) return d;
   }
-  // Fallback for very old records that only had a 'date' field
   if (issue.date) {
     const d = new Date(issue.date);
     if (!isNaN(d.getTime())) return d;
   }
-  return null; // Return null for invalid or missing dates
+  return null; 
 };
 
 
@@ -154,7 +150,7 @@ const Dashboard = () => {
         }
         const liveIssues = await response.json();
         
-        // The server now sends perfectly sorted data, so no client-side sorting is needed.
+      
         setIssues(liveIssues);
 
       } catch (err) {
@@ -245,7 +241,6 @@ const Dashboard = () => {
     <>
       <IssueDetailModal issue={selectedIssue} onClose={handleCloseModal} />
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Civic Issues Dashboard</h1>
           <div className="flex items-center space-x-4">
@@ -274,7 +269,6 @@ const Dashboard = () => {
 
         {error && <div className="p-4 text-center text-red-700 bg-red-100 rounded-lg">{error}</div>}
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <div className="bg-gradient-to-br from-white to-green-50 p-6 rounded-lg shadow-md border border-green-200">
             <div className="flex items-center justify-between">
@@ -327,7 +321,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Issues List */}
+
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Recent Issues</h2>
@@ -362,7 +356,6 @@ const Dashboard = () => {
                             <span>{issue.department}</span>
                           </div>
                           <span>Reported by {issue.reportedBy}</span>
-                          {/* UPDATED: Display both date and time */}
                           <span>{issueDate ? issueDate.toLocaleString() : 'No date available'}</span>
                         </div>
                       </div>

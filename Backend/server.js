@@ -1,33 +1,28 @@
+require('dotenv').config();
 const express = require('express');
 const admin = require('firebase-admin');
 const cors = require('cors');
 const axios = require('axios');
 
-// --- Firebase Setup ---
-const serviceAccount = require('./serviceAccountKey.json'); 
+const serviceAccount = require('./serviceAccountKey.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 const db = admin.firestore();
-// ----------------------
+
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 const PORT = 3001;
 
-/**
- * Helper function to safely convert Firestore data to JSON,
- * ensuring timestamps are in a standard ISO string format.
- */
 const firestoreToJson = (doc) => {
     const data = doc.data();
     const json_data = { id: doc.id };
     for (const key in data) {
         if (data.hasOwnProperty(key)) {
             const value = data[key];
-            // Convert Firestore Timestamps to ISO strings
             if (value && typeof value.toDate === 'function') {
                 json_data[key] = value.toDate().toISOString();
             } else {
@@ -38,20 +33,50 @@ const firestoreToJson = (doc) => {
     return json_data;
 };
 
+app.post('/api/issues/describe-image', async (req, res) => {
+    const { imageBase64 } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY; 
+    
+    if (!apiKey) {
+        return res.status(500).json({ error: 'Gemini API key is not configured on the server.' });
+    }
+    if (!imageBase64) {
+        return res.status(400).json({ error: 'No image data provided.' });
+    }
 
-/**
- * @api {get} /api/issues Get all issues
- * @description Retrieves a list of all civic issues from Firestore, sorted by timestamp (newest first).
- */
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${apiKey}`;
+
+    const payload = {
+        contents: [{
+            parts: [
+                { text: "Analyze this image of a civic issue in an urban Indian context. Based on the image, provide a brief, factual title for the issue, a detailed one-paragraph description, and suggest the most relevant municipal department from this list: ['Public Works', 'Utilities', 'Sanitation', 'Parks & Recreation', 'Emergency Services', 'Road', 'Water Works']. Return ONLY a valid JSON object with the keys 'title', 'description', and 'department'." },
+                { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
+            ]
+        }]
+    };
+
+    try {
+        const response = await axios.post(url, payload);
+
+        let textResponse = response.data.candidates[0].content.parts[0].text;
+        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        const jsonData = JSON.parse(textResponse);
+        res.status(200).json(jsonData);
+
+    } catch (error) {
+        console.error("Error calling Gemini API:", error.response ? error.response.data : error.message);
+        res.status(500).json({ error: 'Failed to analyze image with AI.' });
+    }
+});
+
+
 app.get('/api/issues', async (req, res) => {
     try {
         const snapshot = await db.collection('issues').orderBy('timestamp', 'desc').get();
-        
         if (snapshot.empty) {
             return res.status(200).json([]);
         }
-        
-        // Use the new helper to ensure correct date formatting
         const issues = snapshot.docs.map(firestoreToJson);
         res.status(200).json(issues);
     } catch (error) {
@@ -60,70 +85,69 @@ app.get('/api/issues', async (req, res) => {
     }
 });
 
-
-/**
- * @api {post} /api/issues Create a new issue
- * @description Creates a new issue, gets its priority from the ML model, and saves it to Firestore.
- */
 app.post('/api/issues', async (req, res) => {
-    const newIssue = req.body;
-
-    if (!newIssue.issue || !newIssue.department || !newIssue.location || !newIssue.description || !newIssue.reportedBy) {
-         return res.status(400).json({ error: 'Missing required issue fields.' });
-    }
-    
     try {
-        console.log(`Sending description to ML server: "${newIssue.description}"`);
-        const mlResponse = await axios.post('http://localhost:5000/predict', {
-            description: newIssue.description
-        });
-        
-        newIssue.priority = mlResponse.data.priority || 'Medium'; 
-        newIssue.status = 'Pending';
-        
-        // Use a single, precise timestamp from the server.
-        newIssue.timestamp = new Date(); 
-        // The simple 'date' field is no longer needed as timestamp is more accurate.
-        delete newIssue.date;
+        const newIssue = req.body;
+        if (!newIssue.description) {
+            return res.status(400).json({ error: 'Issue description is required.' });
+        }
 
-        const docRef = await db.collection('issues').add(newIssue);
-        console.log(`New issue created with ID: ${docRef.id} and predicted priority: ${newIssue.priority}`);
         
-        const savedIssueDoc = await docRef.get();
-        // Use the new helper to ensure correct date formatting in the response
-        res.status(201).json(firestoreToJson(savedIssueDoc));
+        const mlResponse = await axios.post('http://127.0.0.1:5000/predict', { description: newIssue.description });
+        const { priority, confidence } = mlResponse.data;
+        
+    
+        const CONFIDENCE_THRESHOLD = 75;
+
+        
+        newIssue.priority = priority || 'Medium';
+        newIssue.status = 'Pending';
+        newIssue.timestamp = new Date();
+        newIssue.modelConfidence = confidence;
+
+        if (confidence < CONFIDENCE_THRESHOLD) {
+            console.log(`Low confidence (${confidence}%) for issue. Flagging for review.`);
+            newIssue.flagged = true;
+            newIssue.flagReason = `Low model confidence (${confidence}%)`;
+        } else {
+            console.log(`High confidence (${confidence}%) for issue. Processing normally.`);
+            newIssue.flagged = false;
+        }
+        
+        const docRef = await db.collection('issues').add(newIssue);
+        const savedDoc = await docRef.get();
+        res.status(201).json(firestoreToJson(savedDoc));
 
     } catch (error) {
-        console.error("Error creating new issue or calling ML model:", error);
-        res.status(500).json({ error: 'Failed to create issue or connect to ML model.' });
+        console.error("Error creating new issue:", error.message);
+        if (error.code === 'ECONNREFUSED') {
+            return res.status(500).json({ error: 'Could not connect to the ML prediction service.' });
+        }
+        res.status(500).json({ error: 'Failed to create issue.' });
     }
 });
 
-
-/**
- * @api {put} /api/issues/:issueId Update an issue's status
- * @description Updates the status of a specific issue in Firestore.
- */
 app.put('/api/issues/:issueId', async (req, res) => {
-    const { issueId } = req.params;
-    const { status } = req.body;
-
-    if (!status) {
-        return res.status(400).json({ error: 'Status is required for an update.' });
-    }
-
     try {
-        const issueRef = db.collection('issues').doc(issueId);
-        await issueRef.update({ status: status });
-        console.log(`Issue ${issueId} status updated to: ${status}`);
-        res.status(200).json({ id: issueId, message: 'Status updated successfully.' });
+        const { issueId } = req.params;
+        const updateData = req.body;
+
+        if (updateData.priority || updateData.status) {
+            updateData.flagged = false;
+            updateData.flagReason = null;
+        }
+
+        const docRef = db.collection('issues').doc(issueId);
+        await docRef.update(updateData);
+        const updatedDoc = await docRef.get();
+
+        res.status(200).json(firestoreToJson(updatedDoc));
     } catch (error) {
-        console.error(`Error updating issue ${issueId}:`, error);
+        console.error(`Error updating issue ${req.params.issueId}:`, error);
         res.status(500).json({ error: 'Failed to update issue.' });
     }
 });
 
-
-app.listen(PORT, () => {
-  console.log(`Civic Watch backend server is running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });

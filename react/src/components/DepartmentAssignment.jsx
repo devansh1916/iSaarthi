@@ -24,7 +24,6 @@ const DepartmentAssignment = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // Mock data - replace with actual API calls
   useEffect(() => {
     const mockDepartments = [
       {
@@ -197,9 +196,7 @@ const DepartmentAssignment = () => {
 
   const handleAssignIssues = () => {
     if (selectedDepartment && selectedIssues.length > 0) {
-      // Implement assignment logic
       console.log(`Assigning issues ${selectedIssues.join(', ')} to ${selectedDepartment.name}`);
-      // Remove assigned issues from unassigned list
       setUnassignedIssues(prev => prev.filter(issue => !selectedIssues.includes(issue.id)));
       setSelectedIssues([]);
       setSelectedDepartment(null);
@@ -207,19 +204,16 @@ const DepartmentAssignment = () => {
   };
 
   const handleAutoAssign = () => {
-    // Implement auto-assignment based on AI suggestions
     const autoAssignments = filteredIssues.map(issue => ({
       issueId: issue.id,
       departmentId: departments.find(d => d.name === issue.suggestedDepartment)?.id
     }));
     
     console.log('Auto-assigning issues:', autoAssignments);
-    // Implement auto-assignment logic
   };
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Department Assignment</h1>
         <div className="flex space-x-4">
@@ -233,7 +227,6 @@ const DepartmentAssignment = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Unassigned Issues */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-md border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -244,7 +237,6 @@ const DepartmentAssignment = () => {
                 </span>
               </div>
               
-              {/* Search and Filter */}
               <div className="mt-4 flex gap-4">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -321,9 +313,7 @@ const DepartmentAssignment = () => {
           </div>
         </div>
 
-        {/* Department Selection */}
         <div className="space-y-6">
-          {/* Selected Issues Summary */}
           {selectedIssues.length > 0 && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="text-sm font-medium text-blue-800 mb-2">
@@ -335,7 +325,6 @@ const DepartmentAssignment = () => {
             </div>
           )}
 
-          {/* Departments List */}
           <div className="bg-white rounded-lg shadow-md border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Departments</h2>
@@ -359,7 +348,6 @@ const DepartmentAssignment = () => {
                       </div>
                       <p className="text-xs text-gray-600 mb-2">{dept.description}</p>
                       
-                      {/* Department Stats */}
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
                           <span className="text-gray-500">Load: </span>
@@ -379,7 +367,6 @@ const DepartmentAssignment = () => {
                         </div>
                       </div>
 
-                      {/* Specialties */}
                       <div className="mt-2">
                         <div className="flex flex-wrap gap-1">
                           {dept.specialties.map((specialty) => (
@@ -393,7 +380,6 @@ const DepartmentAssignment = () => {
                         </div>
                       </div>
 
-                      {/* Contact Info */}
                       <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                         <div className="flex items-center">
                           <Mail className="w-3 h-3 mr-1" />
