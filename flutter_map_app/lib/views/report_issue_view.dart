@@ -32,6 +32,9 @@ class _ReportIssueViewState extends State<ReportIssueView> {
   late final TextEditingController _descriptionController;
   late final TextEditingController _locationController;
 
+  // This variable holds the raw GPS data in the background
+  Position? _currentPosition;
+
   String? _selectedDepartment;
   bool _isSubmitting = false;
   bool _isFetchingLocation = false;
@@ -66,13 +69,16 @@ class _ReportIssueViewState extends State<ReportIssueView> {
   }
 
   Future<void> _handleInitialLocation(String location) async {
-
     if (location.contains(',')) {
       try {
         final parts = location.split(',');
         final lat = double.parse(parts[0].trim());
         final lon = double.parse(parts[1].trim());
+        
+        // Store the coordinates in our background variable
+        _currentPosition = Position(latitude: lat, longitude: lon, timestamp: DateTime.now(), accuracy: 100, altitude: 0, altitudeAccuracy: 0, heading: 0, headingAccuracy: 0, speed: 0, speedAccuracy: 0);
 
+        // Convert to a readable address for the user to see
         List<Placemark> placemarks = await placemarkFromCoordinates(lat, lon);
         
         if (placemarks.isNotEmpty) {
@@ -87,7 +93,6 @@ class _ReportIssueViewState extends State<ReportIssueView> {
         _locationController.text = location; 
       }
     } else {
-
       _locationController.text = location;
     }
   }
@@ -97,49 +102,60 @@ class _ReportIssueViewState extends State<ReportIssueView> {
     setState(() { _isFetchingLocation = true; });
 
     try {
+      // (Permission checks are the same)
       bool serviceEnabled;
       LocationPermission permission;
-
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
         setState(() { _isFetchingLocation = false; });
         return;
       }
-      
       permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are denied.')));
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are denied.')));
           setState(() { _isFetchingLocation = false; });
           return;
         }
       }
-
       if (permission == LocationPermission.deniedForever) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are permanently denied, we cannot request permissions.')));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are permanently denied, we cannot request permissions.')));
         setState(() { _isFetchingLocation = false; });
         return;
       }
 
       final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      
+      // 1. Save the precise coordinates to our background variable
+      _currentPosition = position;
+      
+      // 2. Convert coordinates to a readable address
       List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
 
       if (placemarks.isNotEmpty) {
         final placemark = placemarks.first;
         final address = '${placemark.street}, ${placemark.subLocality}, ${placemark.locality}, ${placemark.postalCode}';
+        // 3. Show the readable address in the UI text field
         _locationController.text = address;
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
     } finally {
-      setState(() { _isFetchingLocation = false; });
+      if(mounted) setState(() { _isFetchingLocation = false; });
     }
   }
 
   Future<void> _submitIssue() async {
     if (_formKey.currentState!.validate()) {
+      if (_currentPosition == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please use the button to fetch your location first.'), backgroundColor: Colors.orange),
+        );
+        return;
+      }
+
       setState(() { _isSubmitting = true; });
 
       final user = FirebaseAuth.instance.currentUser;
@@ -151,15 +167,17 @@ class _ReportIssueViewState extends State<ReportIssueView> {
         return;
       }
 
+      // Here is the key: we format the string from our background variable, NOT the text field
+      final locationString = '${_currentPosition!.latitude},${_currentPosition!.longitude}';
+
       final issueData = {
         "title": _titleController.text,
         "department": _selectedDepartment,
-        "location": _locationController.text, 
+        "location": locationString, // This sends the coordinates
         "description": _descriptionController.text,
         "reportedBy": user.email ?? 'Anonymous'
       };
       
-
       final url = Uri.parse('$API_URL/api/issues');
 
       try {
@@ -169,7 +187,7 @@ class _ReportIssueViewState extends State<ReportIssueView> {
           body: jsonEncode(issueData),
         );
 
-        if (response.statusCode == 201) {
+        if (response.statusCode == 201 && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Issue reported successfully!'), backgroundColor: Colors.green),
           );
@@ -179,17 +197,18 @@ class _ReportIssueViewState extends State<ReportIssueView> {
           throw Exception('Failed to submit issue: ${errorBody['error']}');
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        if(mounted) ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred: $e'), backgroundColor: Colors.red),
         );
       } finally {
-        setState(() { _isSubmitting = false; });
+        if(mounted) setState(() { _isSubmitting = false; });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // The UI part remains the same, showing the readable address
     return Scaffold(
       appBar: AppBar(
         title: const Text('Review & Submit Issue'),
@@ -216,72 +235,43 @@ class _ReportIssueViewState extends State<ReportIssueView> {
 
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Issue Title',
-                    hintText: 'e.g., Pothole on Main Street',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.title),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Issue Title', border: OutlineInputBorder(), prefixIcon: Icon(Icons.title)),
                   validator: (value) => (value == null || value.isEmpty) ? 'Please enter a title.' : null,
                 ),
                 const SizedBox(height: 16.0),
 
                 DropdownButtonFormField<String>(
                   value: _selectedDepartment,
-                  decoration: const InputDecoration(
-                    labelText: 'Department',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.business),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Department', border: OutlineInputBorder(), prefixIcon: Icon(Icons.business)),
                   hint: const Text('Select the relevant department'),
                   isExpanded: true,
                   items: _departments.map((String department) {
                     return DropdownMenuItem<String>(value: department, child: Text(department));
                   }).toList(),
-                  onChanged: (newValue) {
-                    setState(() { _selectedDepartment = newValue; });
-                  },
+                  onChanged: (newValue) { setState(() { _selectedDepartment = newValue; }); },
                   validator: (value) => (value == null) ? 'Please select a department.' : null,
                 ),
                 const SizedBox(height: 16.0),
                 
                 TextFormField(
                   controller: _locationController,
+                  readOnly: true,
                   decoration: InputDecoration(
                     labelText: 'Location',
-                    hintText: 'e.g., Near City Hall, Dwarka-21',
+                    hintText: 'Use the button to fetch location',
                     border: const OutlineInputBorder(),
                     prefixIcon: const Icon(Icons.location_on),
-
-                    suffixIcon: widget.initialLocation == null 
-                      ? (_isFetchingLocation 
-                          ? const Padding(
-                              padding: EdgeInsets.all(12.0),
-                              child: SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            )
-                          : IconButton(
-                              icon: const Icon(Icons.my_location),
-                              onPressed: _getCurrentLocation,
-                              tooltip: 'Use Current Location',
-                            ))
-                      : null,
+                    suffixIcon: (_isFetchingLocation 
+                          ? const Padding(padding: EdgeInsets.all(12.0), child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)))
+                          : IconButton(icon: const Icon(Icons.my_location), onPressed: _getCurrentLocation, tooltip: 'Use Current Location')),
                   ),
-                   validator: (value) => (value == null || value.isEmpty) ? 'Please provide a location.' : null,
+                   validator: (value) => (value == null || value.isEmpty) ? 'Please fetch a location.' : null,
                 ),
                 const SizedBox(height: 16.0),
 
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    hintText: 'Provide a detailed description of the issue.',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.description),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder(), prefixIcon: Icon(Icons.description)),
                   maxLines: 5,
                    validator: (value) => (value == null || value.isEmpty) ? 'Please describe the issue.' : null,
                 ),
