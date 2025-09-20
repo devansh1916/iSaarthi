@@ -2,8 +2,7 @@ services:
   - type: web
     name: citypulse-ml-api
     env: python
-    pythonVersion: "3.9.18"   # Explicitly sets the Python version
-    rootDir: ./Python         # Sets the working directory to your Python folder
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn ml_server:app"
-    
+    rootDir: Python
+    plan: free
+    buildCommand: './build.sh'
+    startCommand: 'gunicorn ml_server:app'
