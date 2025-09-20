@@ -13,7 +13,7 @@ import {
   Info,
   Send
 } from 'lucide-react';
-import ModifyAssignmentModal from './components/ModifyAssignmentModal';
+import ModifyAssignmentModal from './ModifyAssignmentModal';
 
 const DEPARTMENTS = ["Public Works", "Utilities", "Sanitation", "Parks & Recreation", "Emergency Services", "Road", "Water Works"];
 const PRIORITIES = ["Low", "Medium", "High", "Urgent"];
