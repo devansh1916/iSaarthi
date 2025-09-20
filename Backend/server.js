@@ -126,7 +126,7 @@ app.post('/api/issues', async (req, res) => {
             newIssue.readableLocation = newIssue.location;
         }
         
-        const mlResponse = await axios.post('http://127.0.0.1:5000/predict', { description: newIssue.description });
+        const mlResponse = await axios.post('https://isaarth-python-model.onrender.com//predict', { description: newIssue.description });
         const { priority, confidence } = mlResponse.data;
         
         const CONFIDENCE_THRESHOLD = 75;
