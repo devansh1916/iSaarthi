@@ -12,15 +12,14 @@ class CustomBottomNavBar extends StatelessWidget {
       case 0: // Home
         Navigator.pushReplacementNamed(context, '/home');
         break;
+      case 1: // Explore
+        Navigator.pushReplacementNamed(context, '/explore');
+        break;
       case 2: // Map
         Navigator.pushReplacementNamed(context, '/map');
         break;
-      // Add cases for other items later
-      case 1: // Explore (Placeholder)
       case 3: // Chatbot (Placeholder)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('This feature is coming soon!')),
-        );
+        Navigator.pushReplacementNamed(context, '/chatbot');
         break;
     }
   }
@@ -58,6 +57,11 @@ class CustomBottomNavBar extends StatelessWidget {
 
   Widget _buildNavBarItem(BuildContext context, IconData icon, String label, int index) {
     final isSelected = currentIndex == index;
+    // --- START: COLOR CHANGE ---
+    const Color activeColor = Color(0xFF55AD9B); // New active color
+    final Color inactiveColor = Colors.grey[600]!;
+    // --- END: COLOR CHANGE ---
+
     return InkWell(
       onTap: () => _onNavBarTapped(context, index),
       borderRadius: BorderRadius.circular(30),
@@ -67,15 +71,15 @@ class CustomBottomNavBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
-              icon, 
-              color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[600],
+              icon,
+              color: isSelected ? activeColor : inactiveColor, // Using the new color
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
-              label, 
+              label,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[600], 
+                color: isSelected ? activeColor : inactiveColor, // Using the new color
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

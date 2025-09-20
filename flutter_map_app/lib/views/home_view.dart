@@ -1,7 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'report_choose.dart';
 import '../widgets/nav_bar.dart';
 import 'dart:math';
+import 'issue_detail_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -11,13 +16,173 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  Future<void> _showLogoutDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap a button
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Log Out'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to log out?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Log Out'),
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                if (mounted) {
+                  // Navigate to the login screen and clear the navigation stack
+                  Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Helper to build the status indicator
+  Widget _buildStatusIndicator(String status) {
+    Color color;
+    IconData icon;
+    switch (status.toLowerCase()) {
+      case 'resolved':
+        color = Colors.green;
+        icon = Icons.check_circle_outline;
+        break;
+      case 'in progress':
+        color = Colors.orange;
+        icon = Icons.hourglass_top_outlined;
+        break;
+      default: // Pending
+        color = Colors.grey.shade600;
+        icon = Icons.pending_outlined;
+    }
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(height: 4),
+        Text(status, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+
+  // --- UPDATED: This widget is now styled to match the explore view card ---
+  Widget _buildIssueCard(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      color: Colors.amber.shade50,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => IssueDetailView(issueId: doc.id),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data['title'] ?? 'No Title',
+                      style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      data['description'] ?? 'No description available.',
+                      style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[700]),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              _buildStatusIndicator(data['status'] ?? 'Pending'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Builds the entire "Your Issues" section
+  Widget _buildUserIssuesSection() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null || user.email == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Your Reported Issues',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF00796B)),
+          ),
+          const SizedBox(height: 16),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('issues')
+                .where('reportedBy', isEqualTo: user.email)
+                .orderBy('timestamp', descending: true)
+                .limit(5) // Show the 5 most recent issues
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const Center(
+                  child: Text('You have not reported any issues yet.'),
+                );
+              }
+
+              return Column(
+                children: snapshot.data!.docs.map((doc) => _buildIssueCard(doc)).toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF4DB6AC);
+    const Color darkPrimaryColor = Color(0xFF00796B);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: primaryColor,
       body: CustomScrollView(
         slivers: [
-          // Header with animated background
           SliverAppBar(
             expandedHeight: 200.0,
             pinned: false,
@@ -28,65 +193,50 @@ class _HomeViewState extends State<HomeView> {
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 children: [
-                  const DashboardAnimatedBackground(),
+                  const DashboardAnimatedBackground(primaryColor: primaryColor, darkPrimaryColor: darkPrimaryColor),
                   Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Hello User!',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text('Hello User!', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+                              SizedBox(height: 4),
+                              Text('South Delhi', style: TextStyle(fontSize: 16, color: Color(0xFFE8F5E9), fontWeight: FontWeight.w500)),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'South Delhi',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFFE8F5E9),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          // Profile picture with online indicator
-                          Row(
-                            children: [
-                              Stack(
-                                children: [
-                                  const CircleAvatar(
-                                    radius: 25,
-                                    backgroundColor: Colors.white,
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Color(0xFF598A73),
-                                      size: 30,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF4CAF50),
-                                        shape: BoxShape.circle,
-                                        border: Border.fromBorderSide(
-                                          BorderSide(color: Colors.white, width: 2),
-                                        ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: _showLogoutDialog,
+                            child: Stack(
+                              children: [
+                                const CircleAvatar(
+                                  radius: 32,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(Icons.person, color: primaryColor, size: 40),
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    width: 18,
+                                    height: 18,
+                                    decoration: BoxDecoration(
+                                      color: primaryColor,
+                                      shape: BoxShape.circle,
+                                      border: Border.fromBorderSide(
+                                        const BorderSide(color: Colors.white, width: 2.5),
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -96,174 +246,126 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
           ),
-          // Search bar
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              child: Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Q Search',
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  ),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40.0),
+                  topRight: Radius.circular(40.0),
                 ),
               ),
-            ),
-          ),
-          // Start Reporting Card
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-              child: Container(
-                height: 120,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFFFF9800),
-                      Color(0xFFFFB74D),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.orange.withOpacity(0.3),
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Text(
-                    'Start Reporting',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Issue Resolution Overview
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Issue Resolution Overview',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D5A3D),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24.0, 30.0, 24.0, 8.0),
+                    child: Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
+                        ],
+                      ),
+                      child: const TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Q Search',
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      // Bar Chart
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const ReportChooserView()),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
                           ),
-                          child: const BarChartWidget(),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(color: Colors.orange.withOpacity(0.3), spreadRadius: 1, blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Text('Start Reporting', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      // Progress Indicator
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const CircularProgressWidget(),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Issue Resolution Overview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkPrimaryColor)),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
+                                  ],
+                                ),
+                                child: const BarChartWidget(primaryColor: primaryColor, darkPrimaryColor: darkPrimaryColor),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
+                                  ],
+                                ),
+                                child: const CircularProgressWidget(primaryColor: primaryColor, darkPrimaryColor: darkPrimaryColor),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                    child: Row(
+                      children: [
+                        Expanded(child: _buildStatCard('22,495', 'Reports in past week', const Color(0xFFFF9800))),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatCard('48,443', 'Fixed in past month', primaryColor)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatCard('12,730,573', 'Updates on reports', const Color(0xFFE0E0E0))),
+                      ],
+                    ),
+                  ),
+                  _buildUserIssuesSection(),
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
-          ),
-          // Statistics Cards
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      '22,495',
-                      'Reports in past week',
-                      const Color(0xFFFF9800),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      '48,443',
-                      'Fixed in past month',
-                      const Color(0xFF4CAF50),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      '12,730,573',
-                      'Updates on reports',
-                      const Color(0xFFE0E0E0),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
           ),
         ],
       ),
@@ -274,7 +376,7 @@ class _HomeViewState extends State<HomeView> {
             MaterialPageRoute(builder: (context) => const ReportChooserView()),
           );
         },
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: primaryColor,
         elevation: 4.0,
         shape: const CircleBorder(),
         child: const Icon(Icons.camera_alt, color: Colors.white, size: 28),
@@ -301,40 +403,26 @@ class _HomeViewState extends State<HomeView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            number,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          Text(number, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white70,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.white70), maxLines: 2, overflow: TextOverflow.ellipsis),
         ],
       ),
     );
   }
 }
 
-// Dashboard Animated Background
+// Your original custom widgets are preserved below
 class DashboardAnimatedBackground extends StatefulWidget {
-  const DashboardAnimatedBackground({super.key});
+  final Color primaryColor;
+  final Color darkPrimaryColor;
+  const DashboardAnimatedBackground({super.key, required this.primaryColor, required this.darkPrimaryColor});
 
   @override
   State<DashboardAnimatedBackground> createState() => _DashboardAnimatedBackgroundState();
 }
 
-class _DashboardAnimatedBackgroundState extends State<DashboardAnimatedBackground>
-    with TickerProviderStateMixin {
+class _DashboardAnimatedBackgroundState extends State<DashboardAnimatedBackground> with TickerProviderStateMixin {
   late AnimationController _waveController;
   late Animation<double> _waveAnimation;
   late AnimationController _pulseController;
@@ -368,7 +456,7 @@ class _DashboardAnimatedBackgroundState extends State<DashboardAnimatedBackgroun
           scale: _scaleAnimation.value,
           alignment: Alignment.center,
           child: CustomPaint(
-            painter: DashboardBackgroundPainter(_waveAnimation.value),
+            painter: DashboardBackgroundPainter(_waveAnimation.value, widget.primaryColor, widget.darkPrimaryColor),
             size: Size.infinite,
           ),
         );
@@ -379,33 +467,33 @@ class _DashboardAnimatedBackgroundState extends State<DashboardAnimatedBackgroun
 
 class DashboardBackgroundPainter extends CustomPainter {
   final double animationValue;
+  final Color primaryColor;
+  final Color darkPrimaryColor;
   final Random _random = Random();
 
-  DashboardBackgroundPainter(this.animationValue);
+  DashboardBackgroundPainter(this.animationValue, this.primaryColor, this.darkPrimaryColor);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
 
-    // Create gradient background
     final gradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        const Color(0xFF4CAF50),
-        const Color(0xFF66BB6A),
-        const Color(0xFF81C784),
-        const Color(0xFFA5D6A7),
+        primaryColor,
+        primaryColor.withOpacity(0.8),
+        primaryColor.withOpacity(0.6),
+        primaryColor.withOpacity(0.4),
       ],
     );
     final shader = gradient.createShader(rect);
     paint.shader = shader;
     canvas.drawRect(rect, paint);
 
-    // Draw animated organic shapes
     paint.shader = null;
-    final shapeColor = const Color(0xFF2E7D32);
+    final shapeColor = darkPrimaryColor;
 
     paint.color = shapeColor.withOpacity(0.3);
     final path1 = Path()
@@ -440,7 +528,6 @@ class DashboardBackgroundPainter extends CustomPainter {
       ..close();
     canvas.drawPath(path3, paint);
 
-    // Add grain effect
     final grainPaint = Paint()..color = Colors.black.withOpacity(0.05);
     for (int i = 0; i < 2000; i++) {
       final double x = _random.nextDouble() * size.width;
@@ -453,9 +540,10 @@ class DashboardBackgroundPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-// Bar Chart Widget
 class BarChartWidget extends StatelessWidget {
-  const BarChartWidget({super.key});
+  final Color primaryColor;
+  final Color darkPrimaryColor;
+  const BarChartWidget({super.key, required this.primaryColor, required this.darkPrimaryColor});
 
   @override
   Widget build(BuildContext context) {
@@ -464,9 +552,9 @@ class BarChartWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Weekly Reports',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D5A3D)),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: darkPrimaryColor),
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -497,7 +585,7 @@ class BarChartWidget extends StatelessWidget {
                 width: 12,
                 height: 80 * reportedHeight,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D32),
+                  color: darkPrimaryColor,
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
@@ -506,7 +594,7 @@ class BarChartWidget extends StatelessWidget {
                 width: 12,
                 height: 80 * solvedHeight,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50),
+                  color: primaryColor,
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
@@ -523,9 +611,10 @@ class BarChartWidget extends StatelessWidget {
   }
 }
 
-// Circular Progress Widget
 class CircularProgressWidget extends StatelessWidget {
-  const CircularProgressWidget({super.key});
+  final Color primaryColor;
+  final Color darkPrimaryColor;
+  const CircularProgressWidget({super.key, required this.primaryColor, required this.darkPrimaryColor});
 
   @override
   Widget build(BuildContext context) {
@@ -534,9 +623,9 @@ class CircularProgressWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'Progress',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D5A3D)),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: darkPrimaryColor),
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -550,12 +639,12 @@ class CircularProgressWidget extends StatelessWidget {
                     value: 0.75,
                     strokeWidth: 8,
                     backgroundColor: Colors.grey[300],
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                   ),
                 ),
-                const Text(
+                Text(
                   '75%',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D5A3D)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: darkPrimaryColor),
                 ),
               ],
             ),
@@ -565,5 +654,3 @@ class CircularProgressWidget extends StatelessWidget {
     );
   }
 }
-
-

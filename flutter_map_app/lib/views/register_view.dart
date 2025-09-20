@@ -1,4 +1,4 @@
-// lib/views/register_view.dart
+
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -35,9 +35,11 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF4DB6AC);
+    const Color darkPrimaryColor = Color(0xFF00796B);
+
     return Scaffold(
-      // CHANGED: Set the background color to match the new login header.
-      backgroundColor: const Color(0xFF3E5C5C),
+      backgroundColor: primaryColor, 
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -50,7 +52,7 @@ class _RegisterViewState extends State<RegisterView> {
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 children: [
-                  AnimatedBackground(),
+                  DashboardAnimatedBackground(primaryColor: primaryColor, darkPrimaryColor: darkPrimaryColor),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
@@ -72,8 +74,7 @@ class _RegisterViewState extends State<RegisterView> {
                             'Welcome to Dashboard',
                             style: TextStyle(
                               fontSize: 18,
-                              // CHANGED: Using a lighter, muted color for contrast.
-                              color: Color(0xFFC2D1D1),
+                              color: Color(0xFFE8F5E9), 
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -105,7 +106,7 @@ class _RegisterViewState extends State<RegisterView> {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF598A73),
+                        color: darkPrimaryColor, 
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -117,16 +118,16 @@ class _RegisterViewState extends State<RegisterView> {
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF598A73), width: 2),
+                          borderRadius: BorderRadius.circular(25.0),
+                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2), // Updated
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       ),
@@ -141,16 +142,16 @@ class _RegisterViewState extends State<RegisterView> {
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF598A73), width: 2),
+                          borderRadius: BorderRadius.circular(25.0),
+                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2), // Updated
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       ),
@@ -165,16 +166,16 @@ class _RegisterViewState extends State<RegisterView> {
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF598A73), width: 2),
+                          borderRadius: BorderRadius.circular(25.0),
+                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2), // Updated
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       ),
@@ -197,11 +198,10 @@ class _RegisterViewState extends State<RegisterView> {
                               );
                             }
                           } on FirebaseAuthException {
-                            // Handle errors
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF598A73),
+                          backgroundColor: darkPrimaryColor, 
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25.0),
@@ -248,7 +248,7 @@ class _RegisterViewState extends State<RegisterView> {
                           child: const Text(
                             'Sign In',
                             style: TextStyle(
-                              color: Color(0xFF598A73),
+                              color: darkPrimaryColor, 
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -280,109 +280,125 @@ class _RegisterViewState extends State<RegisterView> {
   }
 }
 
-// CHANGED: Replaced with the new Background painter for consistency.
-class AnimatedBackground extends StatefulWidget {
-  const AnimatedBackground({super.key});
+
+class DashboardAnimatedBackground extends StatefulWidget {
+  final Color primaryColor;
+  final Color darkPrimaryColor;
+  const DashboardAnimatedBackground({super.key, required this.primaryColor, required this.darkPrimaryColor});
+
   @override
-  _AnimatedBackgroundState createState() => _AnimatedBackgroundState();
+  State<DashboardAnimatedBackground> createState() => _DashboardAnimatedBackgroundState();
 }
 
-class _AnimatedBackgroundState extends State<AnimatedBackground> with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _DashboardAnimatedBackgroundState extends State<DashboardAnimatedBackground>
+    with TickerProviderStateMixin {
+  late AnimationController _waveController;
+  late Animation<double> _waveAnimation;
+  late AnimationController _pulseController;
+  late Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(duration: const Duration(seconds: 20), vsync: this)..repeat();
-    _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
+    _waveController = AnimationController(duration: const Duration(seconds: 20), vsync: this)..repeat();
+    _waveAnimation = Tween<double>(begin: 0, end: 1).animate(_waveController);
+
+    _pulseController = AnimationController(duration: const Duration(milliseconds: 2500), vsync: this)..repeat(reverse: true);
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _waveController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) {
-          return CustomPaint(painter: BackgroundPainter(_animation.value), size: Size.infinite);
-        });
+      animation: Listenable.merge([_waveAnimation, _scaleAnimation]),
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          alignment: Alignment.center,
+          child: CustomPaint(
+            painter: DashboardBackgroundPainter(_waveAnimation.value, widget.primaryColor, widget.darkPrimaryColor),
+            size: Size.infinite,
+          ),
+        );
+      },
+    );
   }
 }
 
-class BackgroundPainter extends CustomPainter {
+class DashboardBackgroundPainter extends CustomPainter {
   final double animationValue;
+  final Color primaryColor;
+  final Color darkPrimaryColor;
   final Random _random = Random();
 
-  BackgroundPainter(this.animationValue);
+  DashboardBackgroundPainter(this.animationValue, this.primaryColor, this.darkPrimaryColor);
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
 
-    // Create new darker gradient background
     final gradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        const Color(0xFF3E5C5C), // Darker, muted teal
-        const Color(0xFF5C8282), // Lighter complementary color
+        primaryColor,
+        primaryColor.withOpacity(0.8),
+        primaryColor.withOpacity(0.6),
+        primaryColor.withOpacity(0.4),
       ],
     );
-    paint.shader = gradient.createShader(rect);
+    final shader = gradient.createShader(rect);
+    paint.shader = shader;
     canvas.drawRect(rect, paint);
 
-    // Draw animated organic shapes with new colors
     paint.shader = null;
-    final shapeColor1 = const Color(0xFF4A6B6B);
-    final shapeColor2 = const Color(0xFF3E5C5C);
+    final shapeColor = darkPrimaryColor;
 
-    // Shape 1
-    paint.color = shapeColor1.withOpacity(0.7);
-    final path1 = Path();
-    path1.moveTo(0, size.height * 0.3);
-    path1.quadraticBezierTo(size.width * 0.3 + (animationValue * 20), size.height * 0.1 + (animationValue * 30),
-        size.width * 0.6, size.height * 0.4 + (animationValue * 20));
-    path1.quadraticBezierTo(size.width * 0.8 + (animationValue * 15), size.height * 0.6 + (animationValue * 25), size.width,
-        size.height * 0.5);
-    path1.lineTo(size.width, 0);
-    path1.close();
+    paint.color = shapeColor.withOpacity(0.3);
+    final path1 = Path()
+      ..moveTo(0, size.height * 0.3)
+      ..quadraticBezierTo(size.width * 0.3 + (animationValue * 20), size.height * 0.1 + (animationValue * 30),
+          size.width * 0.6, size.height * 0.4 + (animationValue * 20))
+      ..quadraticBezierTo(size.width * 0.8 + (animationValue * 15), size.height * 0.6 + (animationValue * 25),
+          size.width, size.height * 0.5)
+      ..lineTo(size.width, 0)
+      ..close();
     canvas.drawPath(path1, paint);
 
-    // Shape 2
-    paint.color = shapeColor2.withOpacity(0.6);
-    final path2 = Path();
-    path2.moveTo(0, size.height * 0.6);
-    path2.quadraticBezierTo(
-      size.width * 0.2 + (animationValue * 25),
-      size.height * 0.4 + (animationValue * 20),
-      size.width * 0.5,
-      size.height * 0.7 + (animationValue * 15),
-    );
-    path2.quadraticBezierTo(size.width * 0.7 + (animationValue * 30), size.height * 0.9 + (animationValue * 10), size.width,
-        size.height * 0.8);
-    path2.lineTo(size.width, size.height);
-    path2.close();
+    paint.color = shapeColor.withOpacity(0.4);
+    final path2 = Path()
+      ..moveTo(0, size.height * 0.6)
+      ..quadraticBezierTo(size.width * 0.2 + (animationValue * 25), size.height * 0.4 + (animationValue * 20),
+          size.width * 0.5, size.height * 0.7 + (animationValue * 15))
+      ..quadraticBezierTo(size.width * 0.7 + (animationValue * 30), size.height * 0.9 + (animationValue * 10),
+          size.width, size.height * 0.8)
+      ..lineTo(size.width, size.height)
+      ..close();
     canvas.drawPath(path2, paint);
 
-    // Shape 3
-    paint.color = shapeColor1.withOpacity(0.5);
-    final path3 = Path();
-    path3.moveTo(size.width * 0.1, size.height);
-    path3.quadraticBezierTo(size.width * 0.4 + (animationValue * 20), size.height * 0.7 + (animationValue * 25),
-        size.width * 0.8, size.height * 0.9 + (animationValue * 15));
-    path3.quadraticBezierTo(size.width * 0.9 + (animationValue * 10), size.height * 0.6 + (animationValue * 20), size.width,
-        size.height * 0.8);
-    path3.lineTo(size.width, size.height);
-    path3.close();
+    paint.color = shapeColor.withOpacity(0.2);
+    final path3 = Path()
+      ..moveTo(size.width * 0.1, size.height)
+      ..quadraticBezierTo(size.width * 0.4 + (animationValue * 20), size.height * 0.7 + (animationValue * 25),
+          size.width * 0.8, size.height * 0.9 + (animationValue * 15))
+      ..quadraticBezierTo(size.width * 0.9 + (animationValue * 10), size.height * 0.6 + (animationValue * 20),
+          size.width, size.height * 0.8)
+      ..lineTo(size.width, size.height)
+      ..close();
     canvas.drawPath(path3, paint);
 
-    // ADDED: Grain effect
-    final grainPaint = Paint()..color = Colors.white.withOpacity(0.04);
-    for (int i = 0; i < 3000; i++) {
+    final grainPaint = Paint()..color = Colors.black.withOpacity(0.05);
+    for (int i = 0; i < 2000; i++) {
       final double x = _random.nextDouble() * size.width;
       final double y = _random.nextDouble() * size.height;
       canvas.drawRect(Rect.fromLTWH(x, y, 1, 1), grainPaint);

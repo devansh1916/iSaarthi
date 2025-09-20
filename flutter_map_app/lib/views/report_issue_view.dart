@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class ReportIssueView extends StatefulWidget {
   final String? initialTitle;
@@ -29,6 +31,7 @@ class _ReportIssueViewState extends State<ReportIssueView> {
 
   String? _selectedDepartment;
   bool _isSubmitting = false;
+  bool _isFetchingLocation = false;
 
   final List<String> _departments = [
     'Public Works', 'Utilities', 'Sanitation', 'Parks & Recreation', 
@@ -40,7 +43,11 @@ class _ReportIssueViewState extends State<ReportIssueView> {
     super.initState();
     _titleController = TextEditingController(text: widget.initialTitle);
     _descriptionController = TextEditingController(text: widget.initialDescription);
-    _locationController = TextEditingController(text: widget.initialLocation);
+    _locationController = TextEditingController(); 
+
+    if (widget.initialLocation != null) {
+      _handleInitialLocation(widget.initialLocation!);
+    }
 
     if (widget.initialDepartment != null && _departments.contains(widget.initialDepartment)) {
       _selectedDepartment = widget.initialDepartment;
@@ -53,6 +60,79 @@ class _ReportIssueViewState extends State<ReportIssueView> {
     _descriptionController.dispose();
     _locationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleInitialLocation(String location) async {
+
+    if (location.contains(',')) {
+      try {
+        final parts = location.split(',');
+        final lat = double.parse(parts[0].trim());
+        final lon = double.parse(parts[1].trim());
+
+        List<Placemark> placemarks = await placemarkFromCoordinates(lat, lon);
+        
+        if (placemarks.isNotEmpty) {
+          final placemark = placemarks.first;
+          final address = '${placemark.street}, ${placemark.locality}, ${placemark.postalCode}';
+          _locationController.text = address;
+        } else {
+           _locationController.text = location; 
+        }
+      } catch (e) {
+        print("Error parsing or geocoding initial location: $e");
+        _locationController.text = location; 
+      }
+    } else {
+
+      _locationController.text = location;
+    }
+  }
+
+
+  Future<void> _getCurrentLocation() async {
+    setState(() { _isFetchingLocation = true; });
+
+    try {
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
+        setState(() { _isFetchingLocation = false; });
+        return;
+      }
+      
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are denied.')));
+          setState(() { _isFetchingLocation = false; });
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are permanently denied, we cannot request permissions.')));
+        setState(() { _isFetchingLocation = false; });
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      if (placemarks.isNotEmpty) {
+        final placemark = placemarks.first;
+        final address = '${placemark.street}, ${placemark.subLocality}, ${placemark.locality}, ${placemark.postalCode}';
+        _locationController.text = address;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
+    } finally {
+      setState(() { _isFetchingLocation = false; });
+    }
   }
 
   Future<void> _submitIssue() async {
@@ -69,14 +149,15 @@ class _ReportIssueViewState extends State<ReportIssueView> {
       }
 
       final issueData = {
-        "issue": _titleController.text,
+        "title": _titleController.text,
         "department": _selectedDepartment,
-        "location": _locationController.text,
+        "location": _locationController.text, 
         "description": _descriptionController.text,
         "reportedBy": user.email ?? 'Anonymous'
       };
       
-      final url = Uri.parse('http://10.0.2.2:3001/api/issues');
+
+      final url = Uri.parse('https://fbc9283a5e4a.ngrok-free.app/api/issues');
 
       try {
         final response = await http.post(
@@ -91,7 +172,8 @@ class _ReportIssueViewState extends State<ReportIssueView> {
           );
           Navigator.of(context).popUntil((route) => route.isFirst);
         } else {
-          throw Exception('Failed to submit issue. Status code: ${response.statusCode}');
+          final errorBody = jsonDecode(response.body);
+          throw Exception('Failed to submit issue: ${errorBody['error']}');
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -109,6 +191,7 @@ class _ReportIssueViewState extends State<ReportIssueView> {
       appBar: AppBar(
         title: const Text('Review & Submit Issue'),
         backgroundColor: const Color(0xFF55AD9B),
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -128,7 +211,6 @@ class _ReportIssueViewState extends State<ReportIssueView> {
                      ),
                    ),
 
-  
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
@@ -160,14 +242,30 @@ class _ReportIssueViewState extends State<ReportIssueView> {
                 ),
                 const SizedBox(height: 16.0),
                 
-  
                 TextFormField(
                   controller: _locationController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Location',
                     hintText: 'e.g., Near City Hall, Dwarka-21',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.location_on),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.location_on),
+
+                    suffixIcon: widget.initialLocation == null 
+                      ? (_isFetchingLocation 
+                          ? const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            )
+                          : IconButton(
+                              icon: const Icon(Icons.my_location),
+                              onPressed: _getCurrentLocation,
+                              tooltip: 'Use Current Location',
+                            ))
+                      : null,
                   ),
                    validator: (value) => (value == null || value.isEmpty) ? 'Please provide a location.' : null,
                 ),
@@ -190,6 +288,7 @@ class _ReportIssueViewState extends State<ReportIssueView> {
                   onPressed: _isSubmitting ? null : _submitIssue,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF55AD9B),
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),

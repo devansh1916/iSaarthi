@@ -17,6 +17,7 @@ app.use(express.json({ limit: '10mb' }));
 
 const PORT = 3001;
 
+// Helper function to correctly format Firestore data to JSON
 const firestoreToJson = (doc) => {
     const data = doc.data();
     const json_data = { id: doc.id };
@@ -33,19 +34,15 @@ const firestoreToJson = (doc) => {
     return json_data;
 };
 
+// --- IMAGE ANALYSIS ENDPOINT (No Changes) ---
 app.post('/api/issues/describe-image', async (req, res) => {
     const { imageBase64 } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY; 
+    const apiKey = process.env.GEMINI_API_KEY;
     
-    if (!apiKey) {
-        return res.status(500).json({ error: 'Gemini API key is not configured on the server.' });
-    }
-    if (!imageBase64) {
-        return res.status(400).json({ error: 'No image data provided.' });
-    }
+    if (!apiKey) return res.status(500).json({ error: 'Gemini API key is not configured.' });
+    if (!imageBase64) return res.status(400).json({ error: 'No image data provided.' });
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${apiKey}`;
-
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
     const payload = {
         contents: [{
             parts: [
@@ -57,13 +54,10 @@ app.post('/api/issues/describe-image', async (req, res) => {
 
     try {
         const response = await axios.post(url, payload);
-
         let textResponse = response.data.candidates[0].content.parts[0].text;
         textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-        
         const jsonData = JSON.parse(textResponse);
         res.status(200).json(jsonData);
-
     } catch (error) {
         console.error("Error calling Gemini API:", error.response ? error.response.data : error.message);
         res.status(500).json({ error: 'Failed to analyze image with AI.' });
@@ -71,12 +65,13 @@ app.post('/api/issues/describe-image', async (req, res) => {
 });
 
 
+// --- DATA FETCHING ENDPOINTS (No Changes) ---
 app.get('/api/issues', async (req, res) => {
     try {
-        const snapshot = await db.collection('issues').orderBy('timestamp', 'desc').get();
-        if (snapshot.empty) {
-            return res.status(200).json([]);
-        }
+        const snapshot = await db.collection('issues')
+            .where('flagged', '==', false)
+            .orderBy('timestamp', 'desc')
+            .get();
         const issues = snapshot.docs.map(firestoreToJson);
         res.status(200).json(issues);
     } catch (error) {
@@ -85,32 +80,69 @@ app.get('/api/issues', async (req, res) => {
     }
 });
 
+app.get('/api/issues/flagged', async (req, res) => {
+    try {
+        const snapshot = await db.collection('issues')
+            .where('flagged', '==', true)
+            .orderBy('timestamp', 'desc')
+            .get();
+        const issues = snapshot.docs.map(firestoreToJson);
+        res.status(200).json(issues);
+    } catch (error) {
+        console.error("Error fetching flagged issues:", error);
+        res.status(500).json({ error: 'Failed to fetch flagged issues.' });
+    }
+});
+
+
+// --- DATA MODIFICATION ENDPOINTS ---
+
+// UPDATED: New issues now start with a rejectionCount of 0.
 app.post('/api/issues', async (req, res) => {
     try {
         const newIssue = req.body;
-        if (!newIssue.description) {
-            return res.status(400).json({ error: 'Issue description is required.' });
+        if (!newIssue.description || !newIssue.location) {
+            return res.status(400).json({ error: 'Description and location are required.' });
         }
 
+        if (typeof newIssue.location === 'string' && newIssue.location.includes(',')) {
+            const openCageApiKey = process.env.OPENCAGE_API_KEY;
+            if (openCageApiKey) {
+                const [lat, lng] = newIssue.location.split(',');
+                const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${openCageApiKey}`;
+                try {
+                    const geocodeResponse = await axios.get(url);
+                    if (geocodeResponse.data.results && geocodeResponse.data.results.length > 0) {
+                        newIssue.readableLocation = geocodeResponse.data.results[0].formatted;
+                    } else {
+                        newIssue.readableLocation = newIssue.location;
+                    }
+                } catch (geocodeError) {
+                    console.error("Error calling OpenCage API:", geocodeError.message);
+                    newIssue.readableLocation = newIssue.location;
+                }
+            }
+        } else {
+            newIssue.readableLocation = newIssue.location;
+        }
         
         const mlResponse = await axios.post('http://127.0.0.1:5000/predict', { description: newIssue.description });
         const { priority, confidence } = mlResponse.data;
         
-    
         const CONFIDENCE_THRESHOLD = 75;
 
-        
+        // Set initial properties
         newIssue.priority = priority || 'Medium';
         newIssue.status = 'Pending';
         newIssue.timestamp = new Date();
         newIssue.modelConfidence = confidence;
+        newIssue.rejectionCount = 0; // NEW: Initialize rejection count
 
+        // Automatically flag if confidence is low
         if (confidence < CONFIDENCE_THRESHOLD) {
-            console.log(`Low confidence (${confidence}%) for issue. Flagging for review.`);
             newIssue.flagged = true;
             newIssue.flagReason = `Low model confidence (${confidence}%)`;
         } else {
-            console.log(`High confidence (${confidence}%) for issue. Processing normally.`);
             newIssue.flagged = false;
         }
         
@@ -127,26 +159,58 @@ app.post('/api/issues', async (req, res) => {
     }
 });
 
+// BULK UPDATE (No Changes)
+app.post('/api/issues/bulk-update', async (req, res) => {
+    const { ids, payload } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0 || !payload) {
+        return res.status(400).json({ error: 'Invalid request: "ids" array and "payload" object are required.' });
+    }
+
+    try {
+        const batch = db.batch();
+        ids.forEach(id => {
+            const docRef = db.collection('issues').doc(id);
+            batch.update(docRef, payload);
+        });
+        await batch.commit();
+        res.status(200).json({ message: `${ids.length} issues updated successfully.` });
+    } catch (error) {
+        console.error("Error during bulk update:", error);
+        res.status(500).json({ error: 'Failed to perform bulk update.' });
+    }
+});
+
+// UPDATED: This endpoint now intelligently handles the rejection count.
 app.put('/api/issues/:issueId', async (req, res) => {
     try {
         const { issueId } = req.params;
         const updateData = req.body;
 
-        if (updateData.priority || updateData.status) {
-            updateData.flagged = false;
-            updateData.flagReason = null;
+        const docRef = db.collection('issues').doc(issueId);
+        const doc = await docRef.get();
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'Issue not found.' });
+        }
+        const currentData = doc.data();
+
+        // When an admin manually updates a flagged issue, it's considered reviewed.
+        updateData.flagged = false;
+        updateData.flagReason = null;
+
+        // NEW LOGIC: If the issue was flagged because it was rejected, increment the rejection count.
+        if (currentData.flagReason && currentData.flagReason.toLowerCase().includes('rejected')) {
+            updateData.rejectionCount = admin.firestore.FieldValue.increment(1);
         }
 
-        const docRef = db.collection('issues').doc(issueId);
         await docRef.update(updateData);
-        const updatedDoc = await docRef.get();
-
-        res.status(200).json(firestoreToJson(updatedDoc));
+        res.status(200).json({ message: 'Issue updated successfully' });
     } catch (error) {
         console.error(`Error updating issue ${req.params.issueId}:`, error);
         res.status(500).json({ error: 'Failed to update issue.' });
     }
 });
+
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);

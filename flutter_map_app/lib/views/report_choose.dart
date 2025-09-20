@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:async'; // Import for TimeoutException
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -59,14 +59,13 @@ class _ReportChooserViewState extends State<ReportChooserView> {
       final bytes = await imageFile.readAsBytes();
       final base64Image = base64Encode(bytes);
       
-      final url = Uri.parse('https://96a283fc44bd.ngrok-free.app/api/issues/describe-image');
+      final url = Uri.parse('https://fbc9283a5e4a.ngrok-free.app/api/issues/describe-image');
       
-      // --- FIX: ADDED TIMEOUT TO PREVENT CRASHES ---
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'imageBase64': base64Image}),
-      ).timeout(const Duration(seconds: 20)); // Stop waiting after 20 seconds
+      ).timeout(const Duration(seconds: 20)); 
 
       if (!mounted) return;
 
@@ -81,25 +80,24 @@ class _ReportChooserViewState extends State<ReportChooserView> {
           ),
         ));
       } else {
-        // Handle non-200 responses from the server
+
         throw Exception('Server returned an error: ${response.body}');
       }
 
-    // --- FIX: ADDED SPECIFIC CATCH BLOCKS FOR CLEARER ERRORS ---
     } on TimeoutException catch (_) {
-      // This block runs if the server doesn't respond in time
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not connect to the server. Please check your connection and try again.')),
       );
     } on SocketException catch (_) {
-      // This block runs for general network errors (e.g., no internet)
+
        if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Network error. Please check your internet connection.')),
       );
     } catch (e) {
-      // This catches all other errors
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An unexpected error occurred: ${e.toString()}')),
@@ -150,7 +148,6 @@ class _ReportChooserViewState extends State<ReportChooserView> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // AI Assisted Reporting Button
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : _handlePhotoReport,
                 icon: _isLoading
@@ -180,7 +177,6 @@ class _ReportChooserViewState extends State<ReportChooserView> {
               ),
               const SizedBox(height: 20),
 
-              // Manual Form Button
               OutlinedButton.icon(
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ReportIssueView()));

@@ -1,4 +1,4 @@
-// lib/views/login_view.dart
+
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -33,8 +33,11 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF4DB6AC);
+    const Color darkPrimaryColor = Color(0xFF00796B);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF598A73),
+      backgroundColor: primaryColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -47,7 +50,7 @@ class _LoginViewState extends State<LoginView> {
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 children: [
-                  const AnimatedBackground(),
+                  DashboardAnimatedBackground(primaryColor: primaryColor, darkPrimaryColor: darkPrimaryColor),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
@@ -101,7 +104,7 @@ class _LoginViewState extends State<LoginView> {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF598A73),
+                        color: darkPrimaryColor, 
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -114,16 +117,16 @@ class _LoginViewState extends State<LoginView> {
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF598A73), width: 2),
+                          borderRadius: BorderRadius.circular(25.0),
+                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2),
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       ),
@@ -138,16 +141,16 @@ class _LoginViewState extends State<LoginView> {
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25.0),
                           borderSide: const BorderSide(color: Colors.grey, width: 1),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF598A73), width: 2),
+                          borderRadius: BorderRadius.circular(25.0),
+                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2), 
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       ),
@@ -160,7 +163,7 @@ class _LoginViewState extends State<LoginView> {
                         child: const Text(
                           'Forgot Password',
                           style: TextStyle(
-                            color: Color(0xFF598A73),
+                            color: darkPrimaryColor, 
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -187,7 +190,7 @@ class _LoginViewState extends State<LoginView> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF598A73),
+                          backgroundColor: darkPrimaryColor, 
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25.0),
@@ -197,6 +200,33 @@ class _LoginViewState extends State<LoginView> {
                         child: const Text(
                           'Login',
                           style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                                builder: (context) => const HomeView()),
+                            (route) => false,
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: darkPrimaryColor,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                          ),
+                          side:
+                              const BorderSide(color: darkPrimaryColor, width: 1.5), 
+                        ),
+                        child: const Text(
+                          'Go to App Directly',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -236,7 +266,7 @@ class _LoginViewState extends State<LoginView> {
                           child: const Text(
                             'Sign Up',
                             style: TextStyle(
-                              color: Color(0xFF598A73),
+                              color: darkPrimaryColor, 
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -268,13 +298,18 @@ class _LoginViewState extends State<LoginView> {
   }
 }
 
-class AnimatedBackground extends StatefulWidget {
-  const AnimatedBackground({super.key});
+
+class DashboardAnimatedBackground extends StatefulWidget {
+  final Color primaryColor;
+  final Color darkPrimaryColor;
+  const DashboardAnimatedBackground({super.key, required this.primaryColor, required this.darkPrimaryColor});
+
   @override
-  State<AnimatedBackground> createState() => _AnimatedBackgroundState();
+  State<DashboardAnimatedBackground> createState() => _DashboardAnimatedBackgroundState();
 }
 
-class _AnimatedBackgroundState extends State<AnimatedBackground> with TickerProviderStateMixin {
+class _DashboardAnimatedBackgroundState extends State<DashboardAnimatedBackground>
+    with TickerProviderStateMixin {
   late AnimationController _waveController;
   late Animation<double> _waveAnimation;
   late AnimationController _pulseController;
@@ -302,38 +337,52 @@ class _AnimatedBackgroundState extends State<AnimatedBackground> with TickerProv
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-        animation: Listenable.merge([_waveAnimation, _scaleAnimation]),
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            alignment: Alignment.center,
-            child: CustomPaint(
-              painter: BackgroundPainter(_waveAnimation.value),
-              size: Size.infinite,
-            ),
-          );
-        });
+      animation: Listenable.merge([_waveAnimation, _scaleAnimation]),
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          alignment: Alignment.center,
+          child: CustomPaint(
+            painter: DashboardBackgroundPainter(_waveAnimation.value, widget.primaryColor, widget.darkPrimaryColor),
+            size: Size.infinite,
+          ),
+        );
+      },
+    );
   }
 }
 
-class BackgroundPainter extends CustomPainter {
+class DashboardBackgroundPainter extends CustomPainter {
   final double animationValue;
+  final Color primaryColor;
+  final Color darkPrimaryColor;
   final Random _random = Random();
 
-  BackgroundPainter(this.animationValue);
+  DashboardBackgroundPainter(this.animationValue, this.primaryColor, this.darkPrimaryColor);
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
 
-    // CHANGED: Removed gradient for a solid color background.
-    paint.color = const Color(0xFF598A73);
+    final gradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        primaryColor,
+        primaryColor.withOpacity(0.8),
+        primaryColor.withOpacity(0.6),
+        primaryColor.withOpacity(0.4),
+      ],
+    );
+    final shader = gradient.createShader(rect);
+    paint.shader = shader;
     canvas.drawRect(rect, paint);
-    
-    // CHANGED: New shape colors for high contrast.
-    final shapeColor = const Color(0xFF81C784);
 
-    paint.color = shapeColor.withOpacity(0.5);
+    paint.shader = null;
+    final shapeColor = darkPrimaryColor;
+
+    paint.color = shapeColor.withOpacity(0.3);
     final path1 = Path()
       ..moveTo(0, size.height * 0.3)
       ..quadraticBezierTo(size.width * 0.3 + (animationValue * 20), size.height * 0.1 + (animationValue * 30),
@@ -355,7 +404,7 @@ class BackgroundPainter extends CustomPainter {
       ..close();
     canvas.drawPath(path2, paint);
 
-    paint.color = shapeColor.withOpacity(0.3);
+    paint.color = shapeColor.withOpacity(0.2);
     final path3 = Path()
       ..moveTo(size.width * 0.1, size.height)
       ..quadraticBezierTo(size.width * 0.4 + (animationValue * 20), size.height * 0.7 + (animationValue * 25),
@@ -367,7 +416,7 @@ class BackgroundPainter extends CustomPainter {
     canvas.drawPath(path3, paint);
 
     final grainPaint = Paint()..color = Colors.black.withOpacity(0.05);
-    for (int i = 0; i < 3000; i++) {
+    for (int i = 0; i < 2000; i++) {
       final double x = _random.nextDouble() * size.width;
       final double y = _random.nextDouble() * size.height;
       canvas.drawRect(Rect.fromLTWH(x, y, 1, 1), grainPaint);
