@@ -26,6 +26,7 @@ ChartJS.register(
   ArcElement
 );
 
+const API_URL = import.meta.env.VITE_API_URL;
 const Analytics = () => {
   const [issues, setIssues] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -56,7 +57,7 @@ const Analytics = () => {
     const fetchIssues = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:3001/api/issues');
+            const response = await fetch(`${API_URL}/api/issues`);
             if(!response.ok) throw new Error('Server not responding');
             const liveIssues = await response.json();
             setIssues([...liveIssues, ...mockIssues]);
