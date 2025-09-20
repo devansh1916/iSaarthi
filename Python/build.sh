@@ -2,11 +2,8 @@
 # exit on error
 set -o errexit
 
-# Upgrade pip
-pip install --upgrade pip
+# Upgrade pip and ALL core packaging tools first
+pip install --upgrade pip setuptools wheel
 
-# Install build tools INCLUDING ninja
-apt-get update && apt-get install -y build-essential ninja-build
-
-# Install Python dependencies
+# Now, install the project requirements
 pip install -r requirements.txt
