@@ -18,4 +18,4 @@ COPY Python/ .
 EXPOSE 10000
 
 # The command to start the Gunicorn server
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "ml_server:app"]
+CMD ["python", "-m", "gunicorn", "--bind", "0.0.0.0:10000", "ml_server:app"]
