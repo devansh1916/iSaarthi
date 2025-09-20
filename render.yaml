@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: iSaarthi-python-model
-    env: python
-    rootDir: Python
-    plan: free
-    buildCommand: './build.sh'
-    startCommand: 'gunicorn ml_server:app'
