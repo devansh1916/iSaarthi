@@ -8,7 +8,7 @@ import Analytics from './components/Analytics.jsx';
 import DepartmentAssignment from './components/DepartmentAssignment.jsx';
 import PriorityManagement from './components/PriorityManagement.jsx';
 
-const API_URL = 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -16,12 +16,10 @@ function App() {
   const [flaggedIssues, setFlaggedIssues] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // This function fetches fresh data for the entire app from the server.
-  // It's wrapped in useCallback to prevent unnecessary re-renders.
+
   const fetchAllData = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch both active issues and flagged issues simultaneously.
       const [issuesRes, flaggedRes] = await Promise.all([
         fetch(`${API_URL}/api/issues`),
         fetch(`${API_URL}/api/issues/flagged`)
