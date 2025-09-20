@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: citypulse-ml-api
+    name: iSaarthi-python-model
     env: python
     rootDir: Python
     plan: free
