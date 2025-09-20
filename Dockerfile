@@ -1,5 +1,5 @@
 # Use a specific, stable Python version
-FROM python:3.9-slim
+FROM python:3.13.7-slim
 
 # Set the working directory inside the container
 WORKDIR /app
