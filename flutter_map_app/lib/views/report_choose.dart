@@ -6,6 +6,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'report_issue_view.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final API_URL=dotenv.env['NODE_API_URL'];
 
 class ReportChooserView extends StatefulWidget {
   const ReportChooserView({super.key});
@@ -59,7 +62,7 @@ class _ReportChooserViewState extends State<ReportChooserView> {
       final bytes = await imageFile.readAsBytes();
       final base64Image = base64Encode(bytes);
       
-      final url = Uri.parse('https://fbc9283a5e4a.ngrok-free.app/api/issues/describe-image');
+      final url = Uri.parse('$API_URL/api/issues/describe-image');
       
       final response = await http.post(
         url,

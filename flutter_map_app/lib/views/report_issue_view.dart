@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final API_URL=dotenv.env['NODE_API_URL'];
 
 class ReportIssueView extends StatefulWidget {
   final String? initialTitle;
@@ -157,7 +160,7 @@ class _ReportIssueViewState extends State<ReportIssueView> {
       };
       
 
-      final url = Uri.parse('https://fbc9283a5e4a.ngrok-free.app/api/issues');
+      final url = Uri.parse('$API_URL/api/issues');
 
       try {
         final response = await http.post(
