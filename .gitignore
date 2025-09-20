@@ -1,24 +1,18 @@
-That's perfectly fine! If a .gitignore file doesn't exist, you just need to create one.
 
-The easiest way is to create a new file named exactly .gitignore in the root directory of your project (the same folder that contains your react and python folders).
-
-Here is a good starter template for a project with both Python and React. You can copy and paste this into your new .gitignore file.
-
-# Python
 __pycache__/
 *.pyc
 venv/
 env/
 *.env
 
-# React
+
 node_modules/
 build/
 dist/
 .env.local
 .env.*.local
 
-# Common OS files
+
 .DS_Store
 Thumbs.db
 
