@@ -426,7 +426,27 @@ class _MapViewState extends State<MapView> {
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('issues').where('status', isNotEqualTo: 'Resolved').snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const SizedBox.shrink();
+                  // --- FIX 1: Added explicit error handling ---
+                  if (snapshot.hasError) {
+                    print("Firestore Stream Error: ${snapshot.error}");
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        color: Colors.black54,
+                        child: const Text("Error loading issues.", style: TextStyle(color: Colors.white)),
+                      ),
+                    );
+                  }
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox.shrink(); // Show nothing while loading
+                  }
+                  
+                  // --- FIX 2: Added explicit check for empty data ---
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    // You can optionally show a message here if no issues are found
+                    return const SizedBox.shrink();
+                  }
 
                   List<Marker> markers = [];
                   for (var doc in snapshot.data!.docs) {
@@ -455,7 +475,12 @@ class _MapViewState extends State<MapView> {
                             height: 48.0,
                             point: markerPoint,
                             child: GestureDetector(
-                              onTap: () => setState(() => _selectedIssue = data..['id'] = doc.id),
+                              // --- FIX 3: Made data handling safer ---
+                              onTap: () {
+                                final issueData = Map<String, dynamic>.from(data);
+                                issueData['id'] = doc.id;
+                                setState(() => _selectedIssue = issueData);
+                              },
                               child: Icon(
                                 Icons.location_pin,
                                 size: 48.0,
@@ -467,7 +492,8 @@ class _MapViewState extends State<MapView> {
                         );
                       }
                     } catch (e) {
-                      print("Error parsing document ${doc.id}: $e");
+                      // Added a more specific print statement
+                      print("Error parsing document ${doc.id}: $e. Skipping marker.");
                     }
                   }
 
