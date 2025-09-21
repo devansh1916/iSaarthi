@@ -1,5 +1,3 @@
-
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:map_app/views/home_view.dart';
@@ -39,7 +37,7 @@ class _RegisterViewState extends State<RegisterView> {
     const Color darkPrimaryColor = Color(0xFF00796B);
 
     return Scaffold(
-      backgroundColor: primaryColor, 
+      backgroundColor: primaryColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -74,7 +72,7 @@ class _RegisterViewState extends State<RegisterView> {
                             'Welcome to Dashboard',
                             style: TextStyle(
                               fontSize: 18,
-                              color: Color(0xFFE8F5E9), 
+                              color: Color(0xFFE8F5E9),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -106,7 +104,7 @@ class _RegisterViewState extends State<RegisterView> {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: darkPrimaryColor, 
+                        color: darkPrimaryColor,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -127,7 +125,7 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25.0),
-                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2), // Updated
+                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2),
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       ),
@@ -151,7 +149,7 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25.0),
-                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2), // Updated
+                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2),
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       ),
@@ -175,7 +173,7 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25.0),
-                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2), // Updated
+                          borderSide: const BorderSide(color: darkPrimaryColor, width: 2),
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       ),
@@ -184,6 +182,7 @@ class _RegisterViewState extends State<RegisterView> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
+                        // --- UPDATED CODE BLOCK ---
                         onPressed: () async {
                           try {
                             final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -197,11 +196,21 @@ class _RegisterViewState extends State<RegisterView> {
                                 (route) => false,
                               );
                             }
-                          } on FirebaseAuthException {
+                          } on FirebaseAuthException catch (e) {
+                            if (e.code == 'weak-password') {
+                              _showErrorSnackBar('The password provided is too weak. Please use at least 6 characters.');
+                            } else if (e.code == 'email-already-in-use') {
+                              _showErrorSnackBar('An account already exists for that email.');
+                            } else if (e.code == 'invalid-email') {
+                              _showErrorSnackBar('The email address is not valid.');
+                            } else {
+                              _showErrorSnackBar('An error occurred. Please try again.');
+                            }
                           }
                         },
+                        // --- END OF UPDATED CODE BLOCK ---
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: darkPrimaryColor, 
+                          backgroundColor: darkPrimaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25.0),
@@ -248,7 +257,7 @@ class _RegisterViewState extends State<RegisterView> {
                           child: const Text(
                             'Sign In',
                             style: TextStyle(
-                              color: darkPrimaryColor, 
+                              color: darkPrimaryColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -277,6 +286,18 @@ class _RegisterViewState extends State<RegisterView> {
       ),
       child: Icon(icon, color: backgroundColor == Colors.white ? Colors.black : Colors.white, size: 24),
     );
+  }
+
+  // --- NEW HELPER METHOD ---
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 }
 
