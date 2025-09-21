@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '/widgets/nav_bar.dart';
 import 'report_choose.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ChatbotView extends StatefulWidget {
   const ChatbotView({super.key});
@@ -23,9 +24,10 @@ class _ChatbotViewState extends State<ChatbotView> {
   bool isTyping = false;
   
 
-  final String backendUrl = "http://192.168.0.179:8000/chatbot";
+  static final String pythonModel=dotenv.env['PYTHON_MODEL_URL']!;
+  final String backendUrl = "$pythonModel/chatbot";
 
-  final List<String> suggestedActions = [
+  final List<String> suggestedActions = [ 
     "Traffic updates",
     "Water schedule", 
     "Power outages",
