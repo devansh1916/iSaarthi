@@ -6,11 +6,11 @@ This README provides an overview of the project, including team details, relevan
 
 ## 👥 Team Details
 
-**Team Name:** Code Geass
-**Problem Statement ID:** 25031
-**Problem Statement Title:** Crowdsourced Civic Issue Reporting and Resolution System
-**Theme:** Clean and Green Technology
-**PS Category:** Software
+* **Team Name:** Code Geass
+* **Problem Statement ID:** 25031
+* **Problem Statement Title:** Crowdsourced Civic Issue Reporting and Resolution System
+* **Theme:** Clean and Green Technology
+* **PS Category:** Software
 
 **Team Leader:** Swayam Dhar Singh - 2024UEE4170 - @swayamdharsingh
 
