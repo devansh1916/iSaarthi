@@ -32,6 +32,6 @@ This README provides an overview of the project, including team details, relevan
   Other Links for full functioning of deployment (Might need to have all of them open at some device or another if the deployments are asleep due to inactivity):
   * Web App: https://isaarthi.onrender.com
   * Web Portal: https://isaarthi-gov-portal.onrender.com
-  * Node Backend Server: https://isaarthi-node-api.onrender.com
-  * Flask Server for Python Models: https://isaarth-python-model.onrender.com
+  * Node Backend Server: https://isaarthi-node-api.onrender.com (Server only purpose)
+  * Flask Server for Python Models: https://isaarth-python-model.onrender.com (Server only purpose)
 * **Source Code:** [GitHub Repository](https://github.com/devansh1916/iSaarthi)
