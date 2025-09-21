@@ -47,7 +47,7 @@ Open your terminal and run the following command. This will be the main folder f
 git clone [https://github.com/your_username/your_repo_name.git](https://github.com/your_username/your_repo_name.git)
 ```
 
-### File 3: `Step_2_Python.md`
+### Python
 
 **2. Setup the Python ML/Chatbot Server**
 Navigate into the correct directory.
@@ -69,24 +69,24 @@ pip install -r requirements.txt
 python model.py  # Run this only the first time
 python app.py
 ```
-### File 4: `Step_3_NodeJS.md`
+### NodeJS
 
 **4. Setup the React Web Portal**
 * In a **new terminal**, navigate into the correct directory:
-    ```sh
+ ```sh
   cd your_repo_name/code/react
-    ```
+ ```
   Install dependencies and run the server:
   ```sh
   npm install
   npm start
-  ```
-### File 6: `Step_5_Flutter.md`
+ ```
+### Flutter
 **5. Setup the Flutter Mobile App**
 * In a **new terminal**, navigate into the correct directory:
-  ```sh
+ ```sh
   cd your_repo_name/code/flutter_map_app
-  ```
+ ```
 Install dependencies and run the app (make sure an emulator is running):
 ```sh
 flutter pub get
