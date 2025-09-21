@@ -30,4 +30,4 @@ This README provides an overview of the project, including team details, relevan
   * Web Portal: https://isaarthi-gov-portal.onrender.com
   * Node Backend Server: https://isaarthi-node-api.onrender.com
   * Flask Server for Python Models: https://isaarth-python-model.onrender.com
-* **Source Code:** [GitHub Repository](https://github.com/devansh1916/flutter_map_app)
+* **Source Code:** [GitHub Repository](https://github.com/devansh1916/iSaarthi)
