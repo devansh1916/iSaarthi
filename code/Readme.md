@@ -44,7 +44,7 @@ Follow these steps to run the project locally. These instructions are compatible
 **1. Clone the Repository**
 Open your terminal and run the following command. This will be the main folder for all subsequent steps.
 ```sh
-git clone [https://github.com/your_username/your_repo_name.git](https://github.com/your_username/your_repo_name.git)
+git clone [https://github.com/devansh1916/iSaarthi.git](https://github.com/devansh1916/iSaarthi.git)
 ```
 
 ### Python
@@ -52,7 +52,7 @@ git clone [https://github.com/your_username/your_repo_name.git](https://github.c
 **2. Setup the Python ML/Chatbot Server**
 Navigate into the correct directory.
   ```sh
-  cd your_repo_name/code/Python
+  cd iSaarthi/code/Python
 ```
 
 Create and activate a virtual environment (replace python with python3 if needed):
@@ -71,21 +71,31 @@ python app.py
 ```
 ### NodeJS
 
-**4. Setup the React Web Portal**
+**4. Setup the Nodejs Backend Server**
 * In a **new terminal**, navigate into the correct directory:
  ```sh
-  cd your_repo_name/code/react
+  cd iSaarthi/code/Backend
  ```
   Install dependencies and run the server:
   ```sh
   npm install
   npm start
  ```
+### React
+* In a **new terminal**, navigate into the correct directory:
+```sh
+  cd iSaarthi/code/Backend
+```
+  Install dependencies and run the website:
+```sh
+  npm install
+  npm run dev
+```
 ### Flutter
 **5. Setup the Flutter Mobile App**
 * In a **new terminal**, navigate into the correct directory:
  ```sh
-  cd your_repo_name/code/flutter_map_app
+  cd iSaarthi/code/flutter_map_app
  ```
 Install dependencies and run the app (make sure an emulator is running):
 ```sh
