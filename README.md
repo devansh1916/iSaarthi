@@ -1,4 +1,4 @@
-# PS Chosen:25031 CrowdSourced Civic Issue Reporting App:: SIH Hackathon
+# PS Chosen: 25031 CrowdSourced Civic Issue Reporting App:: SIH Hackathon
 
 This README provides an overview of the project, including team details, relevant links, tasks completed, tech stack, key features.
 
@@ -18,7 +18,7 @@ This README provides an overview of the project, including team details, relevan
 * Devansh Sharma- 2024UEE4111- @devansh1916
 * Swayam Dhar Singh- 2024UEE4170- @swayamdharsingh
 * Gargi Shishodia - 2024UCS1701 - @gargishishodia
-* Janvi Gupta - 2023UIT3111 - @USERNAME
+* Janvi Gupta - 2023UIT3111 - @Janvi3004
 * Prachi Goyal - 2024UEE4103 - @Prachi010203
 * Anushka Srivastava - 2023UFT9303 - @USERNAME
 
