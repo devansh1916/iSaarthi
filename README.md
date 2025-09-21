@@ -1,6 +1,6 @@
-# PS Chosen SIH Hackathon
+# PS Chosen:25031 CrowdSourced Civic Issue Reporting App:: SIH Hackathon
 
-This README provides an overview of the project, including team details, relevant links, tasks completed, tech stack, key features, and steps to run the project locally.
+This README provides an overview of the project, including team details, relevant links, tasks completed, tech stack, key features.
 
 ---
 
@@ -27,7 +27,7 @@ This README provides an overview of the project, including team details, relevan
 ## 🔗 Project Links
 
 * **SIH Presentation:** [Final SIH Presentation](URL TO PPT UPLOADED TO GITHUB)
-* **Video Demonstration:** [Watch Video](UNLISTED YOUTUBE LINK)
+* **Video Demonstration:** [Watch Video](https://www.youtube.com/watch?v=zlugm1hfALU)
 * **Live Deployment:** [View Deployment](https://isaarthi.onrender.com)
   Other Links for full functioning of deployment (Might need to have all of them open at some device or another if the deployments are asleep due to inactivity):
   * Web App: https://isaarthi.onrender.com
