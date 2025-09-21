@@ -3,7 +3,7 @@
 - [x] **Task 1:** Implemented a cross-platform mobile app using Flutter for citizen issue reporting.
 - [x] **Task 2:** Developed a dynamic web dashboard with React for officials to manage and track issues.
 - [x] **Task 3:** Built and deployed a Python backend to serve an ML model for issue prioritization.
-- [x] **Task 5:** Set up a Node.js backend to handle core API logic and data management.
+- [x] **Task 4:** Set up a Node.js backend to handle core API logic and data management.
 
 ---
 
