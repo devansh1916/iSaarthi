@@ -83,4 +83,5 @@ class DefaultFirebaseOptions {
     authDomain: 'map-app-abc.firebaseapp.com',
     storageBucket: 'map-app-abc.firebasestorage.app',
   );
+
 }

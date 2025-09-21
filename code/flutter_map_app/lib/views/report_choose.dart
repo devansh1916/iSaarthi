@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data'; 
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -57,9 +57,8 @@ class _ReportChooserViewState extends State<ReportChooserView> {
         setState(() { _isLoading = false; });
         return;
       }
-      final imageFile = File(pickedFile.path);
-
-      final bytes = await imageFile.readAsBytes();
+      
+      final Uint8List bytes = await pickedFile.readAsBytes();
       final base64Image = base64Encode(bytes);
       
       final url = Uri.parse('$API_URL/api/issues/describe-image');
@@ -83,24 +82,15 @@ class _ReportChooserViewState extends State<ReportChooserView> {
           ),
         ));
       } else {
-
         throw Exception('Server returned an error: ${response.body}');
       }
 
     } on TimeoutException catch (_) {
-
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not connect to the server. Please check your connection and try again.')),
       );
-    } on SocketException catch (_) {
-
-       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Network error. Please check your internet connection.')),
-      );
     } catch (e) {
-
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An unexpected error occurred: ${e.toString()}')),

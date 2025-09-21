@@ -197,9 +197,11 @@ class _ReportIssueViewState extends State<ReportIssueView> {
           throw Exception('Failed to submit issue: ${errorBody['error']}');
         }
       } catch (e) {
-        if(mounted) ScaffoldMessenger.of(context).showSnackBar(
+        if(mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred: $e'), backgroundColor: Colors.red),
         );
+        }
       } finally {
         if(mounted) setState(() { _isSubmitting = false; });
       }

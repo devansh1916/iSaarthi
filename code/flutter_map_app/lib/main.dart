@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'firebase_options.dart';
 import 'package:http/http.dart' as http;
 import 'package:map_app/views/chatbot_view.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -24,7 +25,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(MaterialApp(
     title: "iSaarthi",

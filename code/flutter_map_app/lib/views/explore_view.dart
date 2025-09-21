@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '/widgets/nav_bar.dart';
@@ -108,22 +106,43 @@ class ExploreView extends StatelessWidget {
     );
   }
 
+  // --- START: UPDATED RESPONSIVE GRID METHOD ---
   Widget _buildTopCards(Color primaryColor, Color darkPrimaryColor) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1,
-      children: <Widget>[
-        WeatherCard(primaryColor: primaryColor, darkPrimaryColor: darkPrimaryColor),
-        const TrafficCard(), 
-        const AqiCard(),
-        const LeaderboardCard(),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Decide number of columns based on screen width
+        int crossAxisCount;
+        double childAspectRatio;
+
+        if (constraints.maxWidth > 1200) {
+          crossAxisCount = 4;
+          childAspectRatio = 1.5;
+        } else if (constraints.maxWidth > 600) {
+          crossAxisCount = 3;
+          childAspectRatio = 1.2;
+        } else {
+          crossAxisCount = 2;
+          childAspectRatio = 1.1;
+        }
+
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: crossAxisCount, // Dynamic column count
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: childAspectRatio, // Dynamic aspect ratio
+          children: <Widget>[
+            WeatherCard(primaryColor: primaryColor, darkPrimaryColor: darkPrimaryColor),
+            const TrafficCard(), 
+            const AqiCard(),
+            const LeaderboardCard(),
+          ],
+        );
+      },
     );
   }
+  // --- END: UPDATED RESPONSIVE GRID METHOD ---
   
   Widget _buildTrendingIssues() {
     return Column(
@@ -180,6 +199,7 @@ class ExploreView extends StatelessWidget {
   }
 }
 
+// All the card widgets (WeatherCard, AqiCard, etc.) remain unchanged below this line...
 final String? openWeatherApiKey=dotenv.env['openWeatherApiKey'];
 class WeatherCard extends StatefulWidget {
   final Color primaryColor;
@@ -388,12 +408,11 @@ class TrafficCard extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center, 
           children: [
             Text('Traffic Congestion', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Expanded(
-              child: Center(child: Icon(Icons.traffic, color: Colors.red, size: 50)),
-            ),
+            const Center(child: Icon(Icons.traffic, color: Colors.red, size: 50)),
           ],
         ),
       ),
@@ -444,7 +463,6 @@ class LeaderboardCard extends StatelessWidget {
                   
                   final top3 = sortedReporters.take(3).toList();
 
-                  // --- UPDATED: The whole card is now tappable ---
                   return InkWell(
                     onTap: () {
                       if (top3.isNotEmpty) {
@@ -519,8 +537,6 @@ class LeaderboardCard extends StatelessWidget {
   }
 }
 
-
-// --- NEW: A dialog widget to show the full leaderboard ---
 class LeaderboardDialog extends StatelessWidget {
   final List<MapEntry<String, int>> topReporters;
 
@@ -553,7 +569,7 @@ class LeaderboardDialog extends StatelessWidget {
             return ListTile(
               leading: _getMedalForRank(index + 1),
               title: Text(
-                reporter.key, // Show full email/name
+                reporter.key,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               trailing: Text(

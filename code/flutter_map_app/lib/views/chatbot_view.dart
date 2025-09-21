@@ -104,8 +104,8 @@ class _ChatbotViewState extends State<ChatbotView> {
           if (!isUser)
             const CircleAvatar(
               backgroundColor: Color(0xFF20B2AA),
-              child: Icon(Icons.smart_toy, color: Colors.white, size: 20),
               radius: 16,
+              child: Icon(Icons.smart_toy, color: Colors.white, size: 20),
             ),
           
           Flexible(
@@ -144,8 +144,8 @@ class _ChatbotViewState extends State<ChatbotView> {
           if (isUser)
             const CircleAvatar(
               backgroundColor: Color(0xFF20B2AA),
-              child: Icon(Icons.person, color: Colors.white, size: 20),
               radius: 16,
+              child: Icon(Icons.person, color: Colors.white, size: 20),
             ),
         ],
       ),
@@ -210,8 +210,8 @@ class _ChatbotViewState extends State<ChatbotView> {
                         children: [
                           const CircleAvatar(
                             backgroundColor: Color(0xFF20B2AA),
-                            child: Icon(Icons.smart_toy, color: Colors.white, size: 20),
                             radius: 16,
+                            child: Icon(Icons.smart_toy, color: Colors.white, size: 20),
                           ),
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 8),
