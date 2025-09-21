@@ -13,7 +13,7 @@ This README provides an overview of the project, including team details, relevan
 **Team Members:**
 * Devansh Sharma- 2024UEE4111-@devansh1916
 * Swayam Dhar Singh- 2024UEE4170-
-* MEMBER_3 - ROLL_NUMBER - @USERNAME
+* Gargi Shishodia - 2024UCS1701- @gargishishodia
 * MEMBER_4 - ROLL_NUMBER - @USERNAME
 * MEMBER_5 - ROLL_NUMBER - @USERNAME
 * MEMBER_6 - ROLL_NUMBER - @USERNAME
