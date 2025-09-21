@@ -93,3 +93,10 @@ Install dependencies and run the app (make sure an emulator is running):
 flutter pub get
 flutter run
 ```
+
+## 🚀 Deployed Links
+**Note:** Make sure all these links are open on some device or another to make ensure they aren't asleep. This allows for proper flow of the app
+* Web App: https://isaarthi.onrender.com
+* Web Portal: https://isaarthi-gov-portal.onrender.com
+* Node Backend Server: https://isaarthi-node-api.onrender.com
+* Flask Server for Python Models: https://isaarth-python-model.onrender.com
