@@ -26,7 +26,7 @@ This README provides an overview of the project, including team details, relevan
 
 ## 🔗 Project Links
 
-* **SIH Presentation:** [Final SIH Presentation](URL TO PPT UPLOADED TO GITHUB)
+* **SIH Presentation:** [Final SIH Presentation](https://github.com/devansh1916/iSaarthi/blob/main/files/Internal_PPT_Code_Geass.pdf)
 * **Video Demonstration:** [Watch Video](https://www.youtube.com/watch?v=zlugm1hfALU)
 * **Live Deployment:** [View Deployment](https://isaarthi.onrender.com)
   Other Links for full functioning of deployment (Might need to have all of them open at some device or another if the deployments are asleep due to inactivity):
