@@ -25,7 +25,7 @@ This README provides an overview of the project, including team details, relevan
 * **SIH Presentation:** [Final SIH Presentation](URL TO PPT UPLOADED TO GITHUB)
 * **Video Demonstration:** [Watch Video](UNLISTED YOUTUBE LINK)
 * **Live Deployment:** [View Deployment](https://isaarthi.onrender.com)
-  Other Links for full functioning of deployment:
+  Other Links for full functioning of deployment (Might need to have all of them open at some device or another if the deployments are asleep due to inactivity):
   * Web App: https://isaarthi.onrender.com
   * Web Portal: https://isaarthi-gov-portal.onrender.com
   * Node Backend Server: https://isaarthi-node-api.onrender.com
