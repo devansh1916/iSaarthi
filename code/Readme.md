@@ -85,7 +85,7 @@ python ml_server.py
 ### React
 * In a **new terminal**, navigate into the correct directory:
 ```sh
-  cd /code/Backend
+  cd /code/react
 ```
   Install dependencies and run the website:
 ```sh
