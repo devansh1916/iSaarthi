@@ -6,15 +6,16 @@ from sentence_transformers import SentenceTransformer, util
 
 app = Flask(__name__)
 
-print("Loading priority prediction model and vectorizer...")
-try:
-    model = joblib.load('priority_classifier.pkl')
-    tfidf_vectorizer = joblib.load('tfidf_vectorizer.pkl')
-    print("ML model and vectorizer loaded successfully.")
-except FileNotFoundError:
-    print("Error: Model or vectorizer files not found. Run model.py first.")
-    model = None
-    tfidf_vectorizer = None
+
+#print("Loading priority prediction model and vectorizer...")
+#try:
+ #   model = joblib.load('priority_classifier.pkl')
+  #  tfidf_vectorizer = joblib.load('tfidf_vectorizer.pkl')
+   # print("ML model and vectorizer loaded successfully.")
+#except FileNotFoundError:
+    #print("Error: Model or vectorizer files not found. Run model.py first.")
+    #model = None
+    #tfidf_vectorizer = None
 
 
 print("Loading chatbot sentence model...")
