@@ -19,7 +19,7 @@ except FileNotFoundError:
 
 print("Loading chatbot sentence model...")
 
-chatbot_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+chatbot_model = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L3-v2")
 
 print("Loading and embedding civic issues data...")
 
