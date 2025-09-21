@@ -68,7 +68,7 @@ Install dependencies and run the server:
 ```sh
 pip install -r requirements.txt
 python model.py  # Run this only the first time
-python app.py
+python ml_server.py
 ```
 ### NodeJS
 
