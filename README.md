@@ -19,7 +19,7 @@ This README provides an overview of the project, including team details, relevan
 * Swayam Dhar Singh- 2024UEE4170- @swayamdharsingh
 * Gargi Shishodia - 2024UCS1701 - @gargishishodia
 * Janvi Gupta - 2023UIT3111 - @USERNAME
-* Prachi Goyal - 2024UEE4103 - @USERNAME
+* Prachi Goyal - 2024UEE4103 - @Prachi010203
 * Anushka Srivastava - 2023UFT9303 - @USERNAME
 
 ---
