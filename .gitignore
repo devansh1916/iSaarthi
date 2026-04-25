@@ -5,6 +5,8 @@ venv/
 env/
 *.env
 
+code/Backend/
+*.serviceAccountKey.json
 
 node_modules/
 build/
