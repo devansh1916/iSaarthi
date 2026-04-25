@@ -42,7 +42,7 @@ app.post('/api/issues/describe-image', async (req, res) => {
     if (!apiKey) return res.status(500).json({ error: 'Gemini API key is not configured.' });
     if (!imageBase64) return res.status(400).json({ error: 'No image data provided.' });
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const payload = {
         contents: [{
             parts: [
