@@ -7,6 +7,8 @@ env/
 
 code/Backend/
 *.serviceAccountKey.json
+*.env
+
 
 node_modules/
 build/
